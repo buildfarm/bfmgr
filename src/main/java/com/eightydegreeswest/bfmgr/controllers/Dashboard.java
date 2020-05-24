@@ -3,6 +3,7 @@ package com.eightydegreeswest.bfmgr.controllers;
 import com.eightydegreeswest.bfmgr.model.CreateClusterRequest;
 import com.eightydegreeswest.bfmgr.service.BfMgrCtrl;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +17,7 @@ public class Dashboard {
   BfMgrCtrl bfMgrCtrl;
 
   @RequestMapping("/")
-  public String getMainDashboard(Model model) {
+  public String getMainDashboard(Model model) throws UnknownHostException {
     model.addAttribute("clusters", bfMgrCtrl.getBuildfarmClusters());
     return "dashboard";
   }

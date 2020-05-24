@@ -13,7 +13,9 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
@@ -58,14 +60,14 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
   private String remoteWorkerConfig;
 
   @Override
-  public List<BuildfarmCluster> getBuildfarmClusters() {
+  public List<BuildfarmCluster> getBuildfarmClusters() throws UnknownHostException {
     List<BuildfarmCluster> buildfarmClusters = new ArrayList<>();
     List<Container> containers = dockerClient.listContainersCmd()
       .withShowAll(true)
       .exec();
     BuildfarmCluster buildfarmCluster = new BuildfarmCluster();
     buildfarmCluster.setClusterName("Local");
-    buildfarmCluster.setEndpoint("localhost:8980");
+    buildfarmCluster.setEndpoint(InetAddress.getLocalHost().getHostName() + ":8980");
     for (Container container : containers) {
       String containerName = container.getNames()[0];
       if ("running".equals(container.getState()) && containerName.contains("buildfarm")) {
