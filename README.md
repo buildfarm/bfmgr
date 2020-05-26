@@ -9,7 +9,7 @@ This repository hosts the [Buildfarm](https://github.com/bazelbuild/bazel-buildf
 All commandline options override corresponding config settings.
 
 ```
-./mvnw clean package && java -jar target/bfmgr-0.0.1.jar
+./mvnw clean package && java -jar target/bfmgr-<REL NUMBER>.jar
 ```
 
 Go to http://localhost:8080 and click Create.

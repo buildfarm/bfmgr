@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
 
 public class BfMgrCtrlLocal implements BfMgrCtrl {
@@ -58,6 +59,12 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
 
   @Value("${remote.config.worker}")
   private String remoteWorkerConfig;
+
+  @Value("${tag.redis}")
+  private String redisTag;
+
+  @Value("${tag.buildfarm}")
+  private String buildfarmTag;
 
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() throws UnknownHostException {
@@ -104,6 +111,10 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     downloadFile(remoteServerConfig, Paths.get(configPath + "/shard-server.config").toFile());
     downloadFile(remoteWorkerConfig, Paths.get(configPath + "/shard-worker.config").toFile());
     createPath(casPath);
+
+    pullImage(redisRepo, redisTag);
+    pullImage(serverRepo, buildfarmTag);
+    pullImage(workerRepo, buildfarmTag);
 
     CreateContainerResponse response = dockerClient.createContainerCmd(redisRepo)
       .withName(redisContainer)
@@ -159,5 +170,11 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
     fos.close();
     rbc.close();
+  }
+
+  private void pullImage(String imageRepo, String tag) {
+    try {
+      dockerClient.pullImageCmd(imageRepo).withTag(tag).start().awaitCompletion(5, TimeUnit.MINUTES);
+    } catch (Exception e) { }
   }
 }
