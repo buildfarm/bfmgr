@@ -68,9 +68,18 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
   @Value("${tag.buildfarm}")
   private String buildfarmTag;
 
-  private static ExposedPort redisPort = ExposedPort.tcp(6379);
-  private static ExposedPort serverPort = ExposedPort.tcp(8980);
-  private static ExposedPort workerPort = ExposedPort.tcp(8981);
+  @Value("${port.redis}")
+  private static int redisPortVal;
+
+  @Value("${port.server}")
+  private static int serverPortVal;
+
+  @Value("${port.worker}")
+  private static int workerPortVal;
+
+  private static ExposedPort redisPort = ExposedPort.tcp(redisPortVal);
+  private static ExposedPort serverPort = ExposedPort.tcp(serverPortVal);
+  private static ExposedPort workerPort = ExposedPort.tcp(workerPortVal);
 
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() throws UnknownHostException {
@@ -80,23 +89,23 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
       .exec();
     BuildfarmCluster buildfarmCluster = new BuildfarmCluster();
     buildfarmCluster.setClusterName("Local");
-    buildfarmCluster.setEndpoint(InetAddress.getLocalHost().getHostName() + ":8980");
+    buildfarmCluster.setEndpoint(InetAddress.getLocalHost().getHostName() + ":" + serverPortVal);
     for (Container container : containers) {
       String containerName = container.getNames()[0];
       if ("running".equals(container.getState()) && containerName.contains("buildfarm")) {
         switch (containerName) {
           case "/buildfarm-server":
             BfInstance scheduler = new BfInstance();
-            scheduler.setId("localhost:8980");
+            scheduler.setId("localhost:" + serverPortVal);
             List workers = Collections.singletonList(new ArrayList().add(scheduler));
             buildfarmCluster.setWorkers(workers);
           case "/buildfarm-worker":
             BfInstance worker = new BfInstance();
-            worker.setId("localhost:8981");
+            worker.setId("localhost:" + workerPortVal);
             List schedulers = Collections.singletonList(new ArrayList().add(worker));
             buildfarmCluster.setSchedulers(schedulers);
           case "/buildfarm-redis":
-            buildfarmCluster.setRedis("localhost:6379");
+            buildfarmCluster.setRedis("localhost:" + redisPortVal);
         }
       }
     }
@@ -123,7 +132,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     pullImage(workerRepo, buildfarmTag);
 
     Ports portBindings = new Ports();
-    portBindings.bind(redisPort, Ports.Binding.bindPort(6379));
+    portBindings.bind(redisPort, Ports.Binding.bindPort(redisPortVal));
 
     CreateContainerResponse response = dockerClient.createContainerCmd(redisRepo + ":" + redisTag)
       .withName(redisContainer)
@@ -133,29 +142,33 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     dockerClient.startContainerCmd(response.getId()).exec();
 
     portBindings = new Ports();
-    portBindings.bind(workerPort, Ports.Binding.bindPort(8981));
+    portBindings.bind(workerPort, Ports.Binding.bindPort(workerPortVal));
 
     response = dockerClient.createContainerCmd(workerRepo + ":" + buildfarmTag)
       .withName(workerContainer)
       .withExposedPorts(workerPort)
-      .withHostConfig(HostConfig.newHostConfig().withPortBindings(portBindings).withPublishAllPorts(true))
-      .withPrivileged(true)
-      .withHostConfig(HostConfig.newHostConfig().withNetworkMode("host"))
-      .withCmd("/var/lib/buildfarm-shard-worker/shard-worker.config", "--public_name=localhost:8981")
-      .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-shard-worker"), Bind.parse("/tmp/worker:/tmp/worker"))
+      .withHostConfig(HostConfig.newHostConfig()
+        .withPortBindings(portBindings)
+        .withPublishAllPorts(true)
+        .withPrivileged(true)
+        .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-shard-worker"), Bind.parse("/tmp/worker:/tmp/worker"))
+        .withNetworkMode("host"))
+      .withCmd("/var/lib/buildfarm-shard-worker/shard-worker.config", "--public_name=localhost:" + workerPortVal)
       .exec();
     dockerClient.startContainerCmd(response.getId()).exec();
 
     portBindings = new Ports();
-    portBindings.bind(serverPort, Ports.Binding.bindPort(8980));
+    portBindings.bind(serverPort, Ports.Binding.bindPort(serverPortVal));
 
     response = dockerClient.createContainerCmd(serverRepo + ":" + buildfarmTag)
       .withName(serverContainer)
       .withExposedPorts(serverPort)
-      .withHostConfig(HostConfig.newHostConfig().withPortBindings(portBindings).withPublishAllPorts(true))
-      .withHostConfig(HostConfig.newHostConfig().withNetworkMode("host"))
-      .withCmd("/var/lib/buildfarm-server/shard-server.config", "-p", "8980")
-      .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-server"))
+      .withHostConfig(HostConfig.newHostConfig()
+        .withPortBindings(portBindings)
+        .withPublishAllPorts(true)
+        .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-server"))
+        .withNetworkMode("host"))
+      .withCmd("/var/lib/buildfarm-server/shard-server.config", "-p", Integer.toString(serverPortVal))
       .exec();
     dockerClient.startContainerCmd(response.getId()).exec();
   }
