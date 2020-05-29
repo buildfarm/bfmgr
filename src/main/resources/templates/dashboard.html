@@ -14,7 +14,7 @@
 <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
 	<h5 class="my-0 mr-md-auto font-weight-normal">Buildfarm Manager</h5>
 	<nav class="my-2 my-md-0 mr-md-3"></nav>
-	<a class="btn btn-outline-primary" href="/create">Create</a>
+	<a class="btn btn-outline-primary" data-toggle="modal" data-target="#createClusterModal">Create</a>
 </div>
 
 <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
@@ -51,19 +51,102 @@
 			</div>
 		</div>
 		<div th:if="${#lists.size(clusters) == 0}" class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-			<p>No Buildfarm clusters found. <a href="/create">Create one</a>?</p>
+			<p>No Buildfarm clusters found. <a data-toggle="modal" data-target="#createClusterModal">Create one</a>?</p>
 		</div>
 	</div>
 
 	<footer class="pt-4 my-md-5 pt-md-5 border-top">
 		<div class="row">
 			<div class="col-12 col-md">
-				<img class="mb-2" src="/docs/4.5/assets/brand/bootstrap-solid.svg" alt="" width="24" height="24">
+				<img class="mb-2" src="" alt="" width="24" height="24">
 				<small class="d-block mb-3 text-muted">&copy; 2020 | <a href="https://www.github.com/80degreeswest/bfmgr">80degreeswest</a></small>
 			</div>
 		</div>
 	</footer>
 </div>
+
+<div class="modal fade" id="createClusterModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document" style="max-width: 50%;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="createClusterModalLabel">Create a new Buildfarm Cluster</h5>
+				<button class="close" type="button" data-dismiss="modal">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div th:if="${createClusterRequest.clusterName == null}" class="modal-body">Create a new local Buildfarm cluster?</div>
+			<div th:if="${createClusterRequest.clusterName == null}" class="modal-footer">
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+				<a class="btn btn-primary" href="/create">Create</a>
+			</div>
+			<form th:if="${createClusterRequest.clusterName != null}" action="#" th:action="@{/create}" th:object="${createClusterRequest}" method="post">
+				<div class="modal-body">
+					<div class="form-group row">
+						<label for="clusterName" class="col-sm-3 col-form-label">Cluster Name</label>
+						<input class="col-sm-8" id="clusterName" type="text" th:field="*{clusterName}" />
+					</div>
+					<div class="form-group row">
+						<label for="subnet" class="col-sm-3 col-form-label">Subnet ID</label>
+						<input class="col-sm-8" id="subnet" type="text" th:field="*{subnet}" />
+					</div>
+					<div class="form-group row">
+						<label for="vpc" class="col-sm-3 col-form-label">VPC ID</label>
+						<input class="col-sm-8" id="vpc" type="text" th:field="*{vpcName}" />
+					</div>
+					<div class="form-group row">
+						<label for="securityGroup" class="col-sm-3 col-form-label">Security Group</label>
+						<input class="col-sm-8" id="securityGroup" type="text" th:field="*{securityGroupId}" />
+					</div>
+					<div class="form-group row">
+						<label for="ami" class="col-sm-3 col-form-label">AMI</label>
+						<input class="col-sm-8" id="ami" type="text" th:field="*{ami}" />
+					</div>
+					<div class="form-group row">
+						<label for="redisInstanceType" class="col-sm-3 col-form-label">Redis Size</label>
+						<input class="col-sm-8" id="redisInstanceType" type="text" th:field="*{redisInstanceType}" />
+					</div>
+					<div class="form-group row">
+						<label for="serverInstanceType" class="col-sm-3 col-form-label">Server Size</label>
+						<input class="col-sm-8" id="serverInstanceType" type="text" th:field="*{serverInstanceType}" />
+					</div>
+					<div class="form-group row">
+						<label for="serverRepo" class="col-sm-3 col-form-label">Server Repo</label>
+						<input class="col-sm-8" id="serverRepo" type="text" th:field="*{serverRepo}" />
+					</div>
+					<div class="form-group row">
+						<label for="serverTag" class="col-sm-3 col-form-label">Server Tag</label>
+						<input class="col-sm-8" id="serverTag" type="text" th:field="*{serverTag}" />
+					</div>
+					<div class="form-group row">
+						<label for="serverConfig" class="col-sm-3 col-form-label">Server Config</label>
+						<input class="col-sm-8" id="serverConfig" type="text" th:field="*{serverConfig}" />
+					</div>
+					<div class="form-group row">
+						<label for="workerInstanceType" class="col-sm-3 col-form-label">Worker Size</label>
+						<input class="col-sm-8" id="workerInstanceType" type="text" th:field="*{workerInstanceType}" />
+					</div>
+					<div class="form-group row">
+						<label for="workerRepo" class="col-sm-3 col-form-label">Worker Repo</label>
+						<input class="col-sm-8" id="workerRepo" type="text" th:field="*{workerRepo}" />
+					</div>
+					<div class="form-group row">
+						<label for="workerTag" class="col-sm-3 col-form-label">Worker Tag</label>
+						<input class="col-sm-8" id="workerTag" type="text" th:field="*{workerTag}" />
+					</div>
+					<div class="form-group row">
+						<label for="workerConfig" class="col-sm-3 col-form-label">Worker Config</label>
+						<input class="col-sm-8" id="workerConfig" type="text" th:field="*{workerConfig}" />
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+					<button class="btn btn-primary" type="submit" value="Create">Create</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>

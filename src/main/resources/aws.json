@@ -1,0 +1,390 @@
+{
+  "AWSTemplateFormatVersion":"2010-09-09",
+  "Description":"Buildfarm deployment using bfmgr",
+  "Parameters":{
+    "RedisInstanceType":{
+      "Type":"String",
+      "Description":"Redis instance size."
+    },
+    "SchedulerInstanceType":{
+      "Type":"String",
+      "Description":"Scheduler instance size."
+    },
+    "WorkerInstanceType":{
+      "Type":"String",
+      "Description":"Worker instance size."
+    },
+    "Vpc":{
+      "Type":"AWS::EC2::VPC::Id",
+      "Description":"Enter VPC"
+    },
+    "SecurityGroup":{
+      "Type":"AWS::EC2::SecurityGroup::Id",
+      "Description":"Enter VPC Security Group"
+    },
+    "SubnetPool":{
+      "Type":"List<AWS::EC2::Subnet::Id>",
+      "Description":"Enter Subnet pool"
+    },
+    "AmiImageId":{
+      "Type":"String",
+      "Description":"Base AMI ID."
+    },
+    "WorkerRepo":{
+      "Type":"String",
+      "Description":"Worker repository."
+    },
+    "WorkerTag":{
+      "Type":"String",
+      "Description":"Worker image tag."
+    },
+    "WorkerConfigFile":{
+      "Type":"String",
+      "Description":"Worker configuration file."
+    },
+    "ServerRepo":{
+      "Type":"String",
+      "Description":"Server repository."
+    },
+    "ServerTag":{
+      "Type":"String",
+      "Description":"Server image tag."
+    },
+    "ServerConfigFile":{
+      "Type":"String",
+      "Description":"Server configuration file."
+    }
+  },
+  "Resources":{
+    "TemplateScheduler":{
+      "Type":"AWS::EC2::LaunchTemplate",
+      "Properties":{
+        "LaunchTemplateData":{
+          "UserData":{
+            "Fn::Base64":{
+              "Fn::Join":[
+                "",
+                [
+                  "#!/bin/bash\n\n",
+                  "REDIS_ENDPOINT=",
+                  {
+                    "Fn::GetAtt":[
+                      "RedisCluster",
+                      "RedisEndpoint.Address"
+                    ]
+                  },
+                  "\n#create server.conf file directory\n",
+                  "mkdir /var/lib/buildfarm-server\n",
+                  "wget ",
+                  {
+                    "Ref":"ServerConfigFile"
+                  },
+                  " -O shard-server.config\n",
+                  "sed -e \"s/localhost:6379/$REDIS_ENDPOINT:6379/g\" shard-server.config > /var/lib/buildfarm-server/server.config\n",
+                  "yes | yum install docker\n",
+                  "service docker start\n",
+                  "usermod -a -G docker ec2-user\n",
+                  "docker pull ",
+                  {
+                    "Ref":"ServerRepo"
+                  },
+                  ":",
+                  {
+                    "Ref":"ServerTag"
+                  },
+                  "\n",
+                  "docker run --name buildfarm-server -p 8980:8980 -v /var/lib/buildfarm-server/server.config:/var/lib/buildfarm-server/server.config ",
+                  {
+                    "Ref":"ServerRepo"
+                  },
+                  ":",
+                  {
+                    "Ref":"ServerTag"
+                  },
+                  " /var/lib/buildfarm-server/server.config -p 8980\n",
+                  "done\n"
+                ]
+              ]
+            }
+          },
+          "InstanceInitiatedShutdownBehavior":"terminate",
+          "SecurityGroupIds":[
+            {
+              "Ref":"SecurityGroup"
+            }
+          ],
+          "ImageId":{
+            "Ref":"AmiImageId"
+          },
+          "InstanceType":{
+            "Ref":"SchedulerInstanceType"
+          }
+        }
+      },
+      "DependsOn":[
+        "RedisCluster"
+      ]
+    },
+    "TemplateWorker":{
+      "Type":"AWS::EC2::LaunchTemplate",
+      "Properties":{
+        "LaunchTemplateData":{
+          "UserData":{
+            "Fn::Base64":{
+              "Fn::Join":[
+                "",
+                [
+                  "#!/bin/bash\n\n",
+                  "mkdir -p /tmp/worker\n",
+                  "#set worker public name\n",
+                  "PUBLIC_NAME=$(curl http://169.254.169.254/latest/meta-data/local-ipv4):8980\n",
+                  "REDIS_ENDPOINT=",
+                  {
+                    "Fn::GetAtt":[
+                      "RedisCluster",
+                      "RedisEndpoint.Address"
+                    ]
+                  },
+                  "\n#create worker.conf file directory\n",
+                  "mkdir /var/lib/buildfarm-shard-worker\n",
+                  "wget ",
+                  {
+                    "Ref":"WorkerConfigFile"
+                  },
+                  " -O shard-worker.config\n",
+                  "sed -e \"s/localhost:6379/$REDIS_ENDPOINT:6379/g\" shard-worker.config > /var/lib/buildfarm-shard-worker/worker.config\n",
+                  "#activate cloudwatch agent\n",
+                  "rm /etc/init/amazon-cloudwatch-agent.override\n",
+                  "#install ssm\n",
+                  "mkdir /tmp/ssm\n",
+                  "cd /tmp/ssm\n",
+                  "wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb\n",
+                  "dpkg -i amazon-ssm-agent.deb\n",
+                  "status amazon-ssm-agent\n",
+                  "start amazon-ssm-agent\n",
+                  "status amazon-ssm-agent\n",
+                  "yes | yum install docker\n",
+                  "service docker start\n",
+                  "usermod -a -G docker ec2-user\n",
+                  "docker pull ",
+                  {
+                    "Ref":"WorkerRepo"
+                  },
+                  ":",
+                  {
+                    "Ref":"WorkerTag"
+                  },
+                  "\n",
+                  "docker run -d --name buildfarm-worker --privileged -v /var/lib/buildfarm-shard-worker/worker.config:/var/lib/buildfarm-shard-worker/worker.config -v /tmp/worker:/tmp/worker -p 8981:8981 ",
+                  {
+                    "Ref":"WorkerRepo"
+                  },
+                  ":",
+                  {
+                    "Ref":"WorkerTag"
+                  },
+                  " /var/lib/buildfarm-shard-worker/worker.config --public_name=\"$PUBLIC_NAME\"\n",
+                  "done\n"
+                ]
+              ]
+            }
+          },
+          "InstanceInitiatedShutdownBehavior":"terminate",
+          "SecurityGroupIds":[
+            {
+              "Ref":"SecurityGroup"
+            }
+          ],
+          "ImageId":{
+            "Ref":"AmiImageId"
+          },
+          "InstanceType":{
+            "Ref":"WorkerInstanceType"
+          }
+        }
+      },
+      "DependsOn":[
+        "RedisCluster"
+      ]
+    },
+    "TargetGroupScheduler":{
+      "Type":"AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties":{
+        "Port":8980,
+        "Protocol":"TCP",
+        "TargetType":"instance",
+        "VpcId":{
+          "Ref":"Vpc"
+        }
+      }
+    },
+    "LoadBalancerScheduler":{
+      "Type":"AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties":{
+        "Scheme":"internet-facing",
+        "Subnets":{
+          "Ref":"SubnetPool"
+        },
+        "Type":"network"
+      }
+    },
+    "SchedulerListener":{
+      "Type":"AWS::ElasticLoadBalancingV2::Listener",
+      "Properties":{
+        "DefaultActions":[
+          {
+            "Type":"forward",
+            "TargetGroupArn":{
+              "Ref":"TargetGroupScheduler"
+            }
+          }
+        ],
+        "LoadBalancerArn":{
+          "Ref":"LoadBalancerScheduler"
+        },
+        "Port":"8980",
+        "Protocol":"TCP"
+      },
+      "DependsOn":[
+        "TargetGroupScheduler",
+        "LoadBalancerScheduler"
+      ]
+    },
+    "SchedulerListenerDefault":{
+      "Type":"AWS::ElasticLoadBalancingV2::Listener",
+      "Properties":{
+        "DefaultActions":[
+          {
+            "Type":"forward",
+            "TargetGroupArn":{
+              "Ref":"TargetGroupScheduler"
+            }
+          }
+        ],
+        "LoadBalancerArn":{
+          "Ref":"LoadBalancerScheduler"
+        },
+        "Port":"80",
+        "Protocol":"TCP"
+      },
+      "DependsOn":[
+        "TargetGroupScheduler",
+        "LoadBalancerScheduler"
+      ]
+    },
+    "AutoScalingGroupScheduler":{
+      "Type":"AWS::AutoScaling::AutoScalingGroup",
+      "Properties":{
+        "Cooldown":"60",
+        "DesiredCapacity": 1,
+        "HealthCheckGracePeriod":"120",
+        "HealthCheckType":"ELB",
+        "MaxSize": 1,
+        "MinSize": 0,
+        "VPCZoneIdentifier":{
+          "Ref":"SubnetPool"
+        },
+        "TargetGroupARNs":[
+          {
+            "Ref":"TargetGroupScheduler"
+          }
+        ],
+        "LaunchTemplate":{
+          "LaunchTemplateId":{
+            "Ref":"TemplateScheduler"
+          },
+          "Version":{
+            "Fn::GetAtt":[
+              "TemplateScheduler",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "TerminationPolicies":[
+          "Default"
+        ]
+      },
+      "UpdatePolicy" : {
+        "AutoScalingReplacingUpdate" : {
+          "WillReplace" : false
+        }
+      },
+      "DependsOn":[
+        "TargetGroupScheduler",
+        "TemplateScheduler",
+        "RedisCluster"
+      ]
+    },
+    "AutoScalingGroupWorker":{
+      "Type":"AWS::AutoScaling::AutoScalingGroup",
+      "Properties":{
+        "Cooldown":"60",
+        "DesiredCapacity": 1,
+        "HealthCheckGracePeriod":"120",
+        "HealthCheckType":"EC2",
+        "MaxSize": 1,
+        "MinSize": 0,
+        "VPCZoneIdentifier":{
+          "Ref":"SubnetPool"
+        },
+        "LaunchTemplate":{
+          "LaunchTemplateId":{
+            "Ref":"TemplateWorker"
+          },
+          "Version":{
+            "Fn::GetAtt":[
+              "TemplateWorker",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "TerminationPolicies":[
+          "Default"
+        ]
+      },
+      "UpdatePolicy" : {
+        "AutoScalingReplacingUpdate" : {
+          "WillReplace" : false
+        }
+      },
+      "DependsOn":[
+        "TemplateWorker",
+        "RedisCluster"
+      ]
+    },
+    "RedisSubnetGroup": {
+      "Type": "AWS::ElastiCache::SubnetGroup",
+      "Properties": {
+        "Description": "Buildfarm Redis Subnet Group",
+        "SubnetIds": {
+          "Ref": "SubnetPool"
+        }
+      }
+    },
+    "RedisCluster":{
+      "Type":"AWS::ElastiCache::CacheCluster",
+      "Properties":{
+        "AutoMinorVersionUpgrade":"true",
+        "AZMode":"single-az",
+        "CacheNodeType":{
+          "Ref":"RedisInstanceType"
+        },
+        "Engine":"redis",
+        "EngineVersion":"4.0.10",
+        "NumCacheNodes":"1",
+        "PreferredMaintenanceWindow":"thu:06:00-thu:07:00",
+        "CacheSubnetGroupName" : {
+          "Ref":"RedisSubnetGroup"
+        },
+        "VpcSecurityGroupIds":[
+          {
+            "Ref":"SecurityGroup"
+          }
+        ]
+      },
+      "DependsOn":[
+        "RedisSubnetGroup"
+      ]
+    }
+  }
+}

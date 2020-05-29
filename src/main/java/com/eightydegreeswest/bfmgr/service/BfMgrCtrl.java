@@ -10,4 +10,5 @@ public interface BfMgrCtrl {
   List<BuildfarmCluster> getBuildfarmClusters() throws UnknownHostException;
   void createCluster(CreateClusterRequest createClusterRequest) throws IOException;
   void terminateCluster(String clusterName);
+  CreateClusterRequest getDefaultCreateClusterRequest();
 }

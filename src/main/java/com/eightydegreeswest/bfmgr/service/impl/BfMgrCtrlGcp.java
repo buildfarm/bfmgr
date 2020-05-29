@@ -5,7 +5,9 @@ import com.eightydegreeswest.bfmgr.model.CreateClusterRequest;
 import com.eightydegreeswest.bfmgr.service.BfMgrCtrl;
 import java.util.List;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
+@Service
 public class BfMgrCtrlGcp implements BfMgrCtrl {
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() {
@@ -21,6 +23,11 @@ public class BfMgrCtrlGcp implements BfMgrCtrl {
   @Override
   @Async
   public void terminateCluster(String clusterName) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public CreateClusterRequest getDefaultCreateClusterRequest() {
     throw new UnsupportedOperationException();
   }
 }

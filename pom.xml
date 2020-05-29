@@ -10,16 +10,32 @@
 	</parent>
 	<groupId>com.eightydegreeswest</groupId>
 	<artifactId>bfmgr</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4</version>
 	<name>bfmgr</name>
 	<description>Buildfarm Manager</description>
 
 	<properties>
 		<java.version>10</java.version>
 		<spring-cloud.version>Hoxton.SR4</spring-cloud.version>
+        <aws.version>1.11.791</aws.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-core</artifactId>
+			<version>${aws.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-cloudformation</artifactId>
+			<version>${aws.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-ec2</artifactId>
+			<version>${aws.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>

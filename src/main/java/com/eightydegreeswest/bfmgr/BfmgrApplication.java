@@ -4,6 +4,8 @@ import com.eightydegreeswest.bfmgr.service.BfMgrCtrl;
 import com.eightydegreeswest.bfmgr.service.impl.BfMgrCtrlAws;
 import com.eightydegreeswest.bfmgr.service.impl.BfMgrCtrlGcp;
 import com.eightydegreeswest.bfmgr.service.impl.BfMgrCtrlLocal;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +31,12 @@ public class BfmgrApplication {
 	}
 
 	private boolean deployedInAws() {
-		return false;
+		try (Socket socket = new Socket()) {
+			socket.connect(new InetSocketAddress("169.254.169.254", 80), 1000);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private boolean deployedInGcp() {

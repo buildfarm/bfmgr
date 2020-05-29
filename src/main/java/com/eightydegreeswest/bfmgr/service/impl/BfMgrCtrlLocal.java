@@ -28,7 +28,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+@Service
 public class BfMgrCtrlLocal implements BfMgrCtrl {
   private static DockerClient dockerClient = DockerClientBuilder.getInstance().build();
 
@@ -97,13 +99,13 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
           case "/buildfarm-server":
             BfInstance scheduler = new BfInstance();
             scheduler.setId("localhost:" + serverPortVal);
-            List workers = Collections.singletonList(new ArrayList().add(scheduler));
-            buildfarmCluster.setWorkers(workers);
+            List schedulers = Collections.singletonList(new ArrayList().add(scheduler));
+            buildfarmCluster.setSchedulers(schedulers);
           case "/buildfarm-worker":
             BfInstance worker = new BfInstance();
             worker.setId("localhost:" + workerPortVal);
-            List schedulers = Collections.singletonList(new ArrayList().add(worker));
-            buildfarmCluster.setSchedulers(schedulers);
+            List workers = Collections.singletonList(new ArrayList().add(worker));
+            buildfarmCluster.setWorkers(workers);
           case "/buildfarm-redis":
             buildfarmCluster.setRedis("localhost:" + redisPortVal);
         }
@@ -178,6 +180,11 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     removeContainer(serverContainer);
     removeContainer(workerContainer);
     removeContainer(redisContainer);
+  }
+
+  @Override
+  public CreateClusterRequest getDefaultCreateClusterRequest() {
+    throw new UnsupportedOperationException();
   }
 
   private void removeContainer(String container) {
