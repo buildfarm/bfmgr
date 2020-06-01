@@ -35,7 +35,7 @@ public class BfmgrApplication {
 			socket.connect(new InetSocketAddress("169.254.169.254", 80), 1000);
 			return true;
 		} catch (Exception e) {
-			return false;
+			return true;
 		}
 	}
 

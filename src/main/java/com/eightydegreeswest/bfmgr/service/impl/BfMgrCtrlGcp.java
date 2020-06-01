@@ -1,5 +1,7 @@
 package com.eightydegreeswest.bfmgr.service.impl;
 
+import com.amazonaws.services.ec2.model.SecurityGroup;
+import com.amazonaws.services.ec2.model.Subnet;
 import com.eightydegreeswest.bfmgr.model.BuildfarmCluster;
 import com.eightydegreeswest.bfmgr.model.CreateClusterRequest;
 import com.eightydegreeswest.bfmgr.service.BfMgrCtrl;
@@ -28,6 +30,16 @@ public class BfMgrCtrlGcp implements BfMgrCtrl {
 
   @Override
   public CreateClusterRequest getDefaultCreateClusterRequest() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<Subnet> getSubnets() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<SecurityGroup> getSecurityGroups() {
     throw new UnsupportedOperationException();
   }
 }

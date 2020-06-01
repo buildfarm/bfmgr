@@ -87,15 +87,17 @@
 					</div>
 					<div class="form-group row">
 						<label for="subnet" class="col-sm-3 col-form-label">Subnet ID</label>
-						<input class="col-sm-8" id="subnet" type="text" th:field="*{subnet}" />
-					</div>
-					<div class="form-group row">
-						<label for="vpc" class="col-sm-3 col-form-label">VPC ID</label>
-						<input class="col-sm-8" id="vpc" type="text" th:field="*{vpcName}" />
+						<select class="col-sm-8" id="subnet" th:field="*{subnet}">
+							<option value="">Select Subnet</option>
+							<option th:each="subnetListItem : ${subnetList}" th:value="${ subnetListItem.getSubnetId() }"><p th:text="${ subnetListItem.getSubnetId() }" th:remove="tag"></p></option>
+						</select>
 					</div>
 					<div class="form-group row">
 						<label for="securityGroup" class="col-sm-3 col-form-label">Security Group</label>
-						<input class="col-sm-8" id="securityGroup" type="text" th:field="*{securityGroupId}" />
+						<select class="col-sm-8" id="securityGroup" th:field="*{securityGroupId}">
+							<option value="">Select Security Group</option>
+							<option th:each="securityGroupItem : ${securityGroupList}" th:value="${ securityGroupItem.getGroupId() }"><p th:text="${ securityGroupItem.getGroupName() + ' (' + securityGroupItem.getGroupId() + ')' }" th:remove="tag"></p></option>
+						</select>
 					</div>
 					<div class="form-group row">
 						<label for="ami" class="col-sm-3 col-form-label">AMI</label>

@@ -2,6 +2,10 @@
   "AWSTemplateFormatVersion":"2010-09-09",
   "Description":"Buildfarm deployment using bfmgr",
   "Parameters":{
+    "ClusterName":{
+      "Type":"String",
+      "Description":"Cluster name."
+    },
     "RedisInstanceType":{
       "Type":"String",
       "Description":"Redis instance size."
@@ -225,6 +229,9 @@
         "Subnets":{
           "Ref":"SubnetPool"
         },
+        "Name":{
+          "Ref":"ClusterName"
+        },
         "Type":"network"
       }
     },
@@ -302,6 +309,13 @@
         },
         "TerminationPolicies":[
           "Default"
+        ],
+        "Tags" : [
+          {
+            "Key" : "InstanceType",
+            "PropagateAtLaunch" : "True",
+            "Value" : "scheduler"
+          }
         ]
       },
       "UpdatePolicy" : {
@@ -340,6 +354,13 @@
         },
         "TerminationPolicies":[
           "Default"
+        ],
+        "Tags" : [
+          {
+            "Key" : "InstanceType",
+            "PropagateAtLaunch" : "True",
+            "Value" : "worker"
+          }
         ]
       },
       "UpdatePolicy" : {

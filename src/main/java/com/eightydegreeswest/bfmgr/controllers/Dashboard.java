@@ -21,6 +21,8 @@ public class Dashboard {
   @RequestMapping("/")
   public String getMainDashboard(Model model) throws UnknownHostException {
     model.addAttribute("createClusterRequest", bfMgrCtrl.getDefaultCreateClusterRequest());
+    model.addAttribute("subnetList", bfMgrCtrl.getSubnets());
+    model.addAttribute("securityGroupList", bfMgrCtrl.getSecurityGroups());
     model.addAttribute("clusters", bfMgrCtrl.getBuildfarmClusters());
     return "dashboard";
   }
