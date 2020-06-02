@@ -12,6 +12,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.DockerClientBuilder;
 import java.io.File;
@@ -76,17 +77,13 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
   private String buildfarmTag;
 
   @Value("${port.redis}")
-  private static int redisPortVal;
+  private int redisPortVal;
 
   @Value("${port.server}")
-  private static int serverPortVal;
+  private int serverPortVal;
 
   @Value("${port.worker}")
-  private static int workerPortVal;
-
-  private static ExposedPort redisPort = ExposedPort.tcp(redisPortVal);
-  private static ExposedPort serverPort = ExposedPort.tcp(serverPortVal);
-  private static ExposedPort workerPort = ExposedPort.tcp(workerPortVal);
+  private int workerPortVal;
 
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() throws UnknownHostException {
@@ -139,24 +136,21 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     pullImage(workerRepo, buildfarmTag);
 
     Ports portBindings = new Ports();
-    portBindings.bind(redisPort, Ports.Binding.bindPort(redisPortVal));
+    portBindings.bind(ExposedPort.tcp(redisPortVal), Ports.Binding.bindPort(redisPortVal));
 
     CreateContainerResponse response = dockerClient.createContainerCmd(redisRepo + ":" + redisTag)
       .withName(redisContainer)
-      .withExposedPorts(redisPort)
-      .withHostConfig(HostConfig.newHostConfig().withPortBindings(portBindings).withPublishAllPorts(true))
+      .withHostConfig(HostConfig.newHostConfig().withPortBindings(portBindings))
       .exec();
     dockerClient.startContainerCmd(response.getId()).exec();
 
     portBindings = new Ports();
-    portBindings.bind(workerPort, Ports.Binding.bindPort(workerPortVal));
+    portBindings.bind(ExposedPort.tcp(workerPortVal), Ports.Binding.bindPort(workerPortVal));
 
     response = dockerClient.createContainerCmd(workerRepo + ":" + buildfarmTag)
       .withName(workerContainer)
-      .withExposedPorts(workerPort)
       .withHostConfig(HostConfig.newHostConfig()
         .withPortBindings(portBindings)
-        .withPublishAllPorts(true)
         .withPrivileged(true)
         .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-shard-worker"), Bind.parse("/tmp/worker:/tmp/worker"))
         .withNetworkMode("host"))
@@ -165,14 +159,12 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     dockerClient.startContainerCmd(response.getId()).exec();
 
     portBindings = new Ports();
-    portBindings.bind(serverPort, Ports.Binding.bindPort(serverPortVal));
+    portBindings.bind(ExposedPort.tcp(serverPortVal), Ports.Binding.bindPort(serverPortVal));
 
     response = dockerClient.createContainerCmd(serverRepo + ":" + buildfarmTag)
       .withName(serverContainer)
-      .withExposedPorts(serverPort)
       .withHostConfig(HostConfig.newHostConfig()
         .withPortBindings(portBindings)
-        .withPublishAllPorts(true)
         .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-server"))
         .withNetworkMode("host"))
       .withCmd("/var/lib/buildfarm-server/shard-server.config", "-p", Integer.toString(serverPortVal))
@@ -189,7 +181,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
 
   @Override
   public CreateClusterRequest getDefaultCreateClusterRequest() {
-    throw new UnsupportedOperationException();
+    return new CreateClusterRequest();
   }
 
   @Override

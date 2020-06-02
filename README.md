@@ -6,6 +6,14 @@ This repository hosts the [Buildfarm](https://github.com/bazelbuild/bazel-buildf
 
 #### Local Testing
 
+Make sure Docker is running
+
+Create log directory
+
+```
+sudo mkdir /var/log/bfmgr && sudo chmod 0777 /var/log/bfmgr
+```
+
 Build and run from source
 
 ```
@@ -26,18 +34,23 @@ Go to http://localhost:8080 and click Create.
 
 Prerequisites:
 
-Create a new IAM role with the following permissions
+Create a new IAM role
 
 ```
 
 ```
 
-Download and run a binary release
+Launch a new EC2 instance (include above role)
+
+Setup EC2 instance, download and run a binary release
 
 ```
+yes | sudo yum install java
+mkdir /var/log/bfmgr
+chmod 0777 /var/log/bfmgr
 rel=<REL NUMBER>
-wget https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar
-java -jar target/bfmgr-$rel.jar
+wget https://bfmgr.s3.amazonaws.com/bfmgr-$rel.jar
+java -jar bfmgr-$rel.jar
 ```
 
 Go to http://<INSTANCE_IP>:8080 and click Create.
