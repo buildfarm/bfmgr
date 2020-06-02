@@ -10,9 +10,9 @@
       "Type":"String",
       "Description":"Redis instance size."
     },
-    "SchedulerInstanceType":{
+    "ServerInstanceType":{
       "Type":"String",
-      "Description":"Scheduler instance size."
+      "Description":"Server instance size."
     },
     "WorkerInstanceType":{
       "Type":"String",
@@ -60,7 +60,7 @@
     }
   },
   "Resources":{
-    "TemplateScheduler":{
+    "TemplateServer":{
       "Type":"AWS::EC2::LaunchTemplate",
       "Properties":{
         "LaunchTemplateData":{
@@ -121,7 +121,7 @@
             "Ref":"AmiImageId"
           },
           "InstanceType":{
-            "Ref":"SchedulerInstanceType"
+            "Ref":"ServerInstanceType"
           }
         }
       },
@@ -211,7 +211,7 @@
         "RedisCluster"
       ]
     },
-    "TargetGroupScheduler":{
+    "TargetGroupServer":{
       "Type":"AWS::ElasticLoadBalancingV2::TargetGroup",
       "Properties":{
         "Port":8980,
@@ -222,7 +222,7 @@
         }
       }
     },
-    "LoadBalancerScheduler":{
+    "LoadBalancerServer":{
       "Type":"AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties":{
         "Scheme":"internet-facing",
@@ -235,51 +235,51 @@
         "Type":"network"
       }
     },
-    "SchedulerListener":{
+    "ServerListener":{
       "Type":"AWS::ElasticLoadBalancingV2::Listener",
       "Properties":{
         "DefaultActions":[
           {
             "Type":"forward",
             "TargetGroupArn":{
-              "Ref":"TargetGroupScheduler"
+              "Ref":"TargetGroupServer"
             }
           }
         ],
         "LoadBalancerArn":{
-          "Ref":"LoadBalancerScheduler"
+          "Ref":"LoadBalancerServer"
         },
         "Port":"8980",
         "Protocol":"TCP"
       },
       "DependsOn":[
-        "TargetGroupScheduler",
-        "LoadBalancerScheduler"
+        "TargetGroupServer",
+        "LoadBalancerServer"
       ]
     },
-    "SchedulerListenerDefault":{
+    "ServerListenerDefault":{
       "Type":"AWS::ElasticLoadBalancingV2::Listener",
       "Properties":{
         "DefaultActions":[
           {
             "Type":"forward",
             "TargetGroupArn":{
-              "Ref":"TargetGroupScheduler"
+              "Ref":"TargetGroupServer"
             }
           }
         ],
         "LoadBalancerArn":{
-          "Ref":"LoadBalancerScheduler"
+          "Ref":"LoadBalancerServer"
         },
         "Port":"80",
         "Protocol":"TCP"
       },
       "DependsOn":[
-        "TargetGroupScheduler",
-        "LoadBalancerScheduler"
+        "TargetGroupServer",
+        "LoadBalancerServer"
       ]
     },
-    "AutoScalingGroupScheduler":{
+    "AutoScalingGroupServer":{
       "Type":"AWS::AutoScaling::AutoScalingGroup",
       "Properties":{
         "Cooldown":"60",
@@ -293,16 +293,16 @@
         },
         "TargetGroupARNs":[
           {
-            "Ref":"TargetGroupScheduler"
+            "Ref":"TargetGroupServer"
           }
         ],
         "LaunchTemplate":{
           "LaunchTemplateId":{
-            "Ref":"TemplateScheduler"
+            "Ref":"TemplateServer"
           },
           "Version":{
             "Fn::GetAtt":[
-              "TemplateScheduler",
+              "TemplateServer",
               "LatestVersionNumber"
             ]
           }
@@ -314,7 +314,7 @@
           {
             "Key" : "InstanceType",
             "PropagateAtLaunch" : "True",
-            "Value" : "scheduler"
+            "Value" : "server"
           }
         ]
       },
@@ -324,8 +324,8 @@
         }
       },
       "DependsOn":[
-        "TargetGroupScheduler",
-        "TemplateScheduler",
+        "TargetGroupServer",
+        "TemplateServer",
         "RedisCluster"
       ]
     },

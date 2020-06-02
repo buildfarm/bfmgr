@@ -12,20 +12,17 @@ import com.amazonaws.services.cloudformation.model.StackSummary;
 import com.amazonaws.services.cloudformation.model.Tag;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
-import com.amazonaws.services.ec2.model.DescribeInstanceTypesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.InstanceTypeInfo;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
-import com.amazonaws.services.ec2.model.Vpc;
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancing;
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClientBuilder;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
+import com.amazonaws.services.elasticloadbalancingv2.AmazonElasticLoadBalancing;
+import com.amazonaws.services.elasticloadbalancingv2.AmazonElasticLoadBalancingClientBuilder;
+import com.amazonaws.services.elasticloadbalancingv2.model.DescribeLoadBalancersRequest;
 import com.eightydegreeswest.bfmgr.model.BfInstance;
 import com.eightydegreeswest.bfmgr.model.BuildfarmCluster;
 import com.eightydegreeswest.bfmgr.model.CreateClusterRequest;
@@ -36,6 +33,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -45,6 +46,8 @@ import org.springframework.util.FileCopyUtils;
 
 @Service
 public class BfMgrCtrlAws implements BfMgrCtrl {
+  private static final Logger logger = LoggerFactory.getLogger(BfMgrCtrlAws.class);
+
   private static AmazonCloudFormation awsCloudFormationClient;
   private static AmazonEC2 awsEc2Client;
   private static AmazonElasticLoadBalancing awsElbClient;
@@ -77,6 +80,9 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   @Value("${default.aws.instance.worker}")
   private String defaultWorkerInstanceType;
 
+  @Autowired
+  private Map<String, String> bfArgs;
+
   public BfMgrCtrlAws() {
     String region = getRegion();
     awsCloudFormationClient = AmazonCloudFormationAsyncClientBuilder.standard().withRegion(region).build();
@@ -89,11 +95,11 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   public List<BuildfarmCluster> getBuildfarmClusters() {
     List<BuildfarmCluster> buildfarmClusters = new ArrayList<>();
     for (StackSummary stack : awsCloudFormationClient.listStacks().getStackSummaries()) {
-      if (stack.getTemplateDescription().equalsIgnoreCase("Buildfarm deployment using bfmgr") && !stack.getStackStatus().equals("DELETE_COMPLETE")) {
+      if (stack.getTemplateDescription().equalsIgnoreCase("Buildfarm deployment using bfmgr") && !stack.getStackStatus().contains("DELETE")) {
         BuildfarmCluster buildfarmCluster = new BuildfarmCluster();
         buildfarmCluster.setClusterName(stack.getStackName());
         buildfarmCluster.setEndpoint(getLoadBalancerEndpoint(buildfarmCluster.getClusterName()));
-        buildfarmCluster.setSchedulers(getSchedulers(buildfarmCluster.getClusterName()));
+        buildfarmCluster.setServers(getServers(buildfarmCluster.getClusterName()));
         buildfarmCluster.setWorkers(getWorkers(buildfarmCluster.getClusterName()));
         buildfarmClusters.add(buildfarmCluster);
       }
@@ -150,14 +156,14 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
 
   private String getLoadBalancerEndpoint(String clusterName) {
     try {
-      return awsElbClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withLoadBalancerNames(clusterName)).getLoadBalancerDescriptions().get(0).getDNSName();
+      return awsElbClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withNames(clusterName)).getLoadBalancers().get(0).getDNSName();
       } catch (Exception e) {
       return "N/A";
     }
   }
 
-  private List<BfInstance> getSchedulers(String clusterName) {
-    return getBfInstances(clusterName, "scheduler");
+  private List<BfInstance> getServers(String clusterName) {
+    return getBfInstances(clusterName, "server");
   }
 
   private List<BfInstance> getWorkers(String clusterName) {
@@ -185,6 +191,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
       bfInstance.setStartDate(i.getLaunchTime());
       bfInstance.setState(i.getState().getName());
       bfInstance.setType(i.getInstanceType());
+      instances.add(bfInstance);
     }
     return instances;
   }
@@ -204,7 +211,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   private Collection<Parameter> getCloudFormationParameters(CreateClusterRequest createClusterRequest) {
     Collection<Parameter> parameters = new ArrayList<>();
     parameters.add(getParameter("RedisInstanceType", createClusterRequest.getRedisInstanceType()));
-    parameters.add(getParameter("SchedulerInstanceType", createClusterRequest.getServerInstanceType()));
+    parameters.add(getParameter("ServerInstanceType", createClusterRequest.getServerInstanceType()));
     parameters.add(getParameter("WorkerInstanceType", createClusterRequest.getWorkerInstanceType()));
     parameters.add(getParameter("Vpc", getVpcId(createClusterRequest.getSubnet())));
     parameters.add(getParameter("SecurityGroup", createClusterRequest.getSecurityGroupId()));
@@ -233,6 +240,9 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     tags.add(tag);
     tag = new Tag().withKey("Created By").withValue("bfmgr");
     tags.add(tag);
+    tag = new Tag().withKey("Resource").withValue("Buildfarm");
+    tags.add(tag);
+    tags.addAll(parseExtraTags());
     return tags;
   }
 
@@ -242,5 +252,17 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
 
   private String getVpcId(String subnetId) {
     return awsEc2Client.describeSubnets(new DescribeSubnetsRequest().withSubnetIds(subnetId)).getSubnets().get(0).getVpcId();
+  }
+
+  private List<Tag> parseExtraTags() {
+    List<Tag> extraTags = new ArrayList<>();
+    if (bfArgs.containsKey("--tags")) {
+      for (String cmdTagPair : bfArgs.get("--tags").split(",")) {
+        String[] cmdTag = cmdTagPair.split("=");
+        Tag tag = new Tag().withKey(cmdTag[0]).withValue(cmdTag[1]);
+        extraTags.add(tag);
+      }
+    }
+    return extraTags;
   }
 }

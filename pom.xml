@@ -39,7 +39,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-elasticloadbalancing</artifactId>
+			<artifactId>aws-java-sdk-elasticloadbalancingv2</artifactId>
 			<version>${aws.version}</version>
 		</dependency>
 
@@ -52,6 +52,11 @@
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>
 			<version>3.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.lognet</groupId>
+			<artifactId>grpc-spring-boot-starter</artifactId>
+			<version>3.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -29,11 +29,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BfMgrCtrlLocal implements BfMgrCtrl {
+  private static final Logger logger = LoggerFactory.getLogger(BfMgrCtrlLocal.class);
   private static DockerClient dockerClient = DockerClientBuilder.getInstance().build();
 
   @Value("${container.name.server}")
@@ -99,10 +102,10 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
       if ("running".equals(container.getState()) && containerName.contains("buildfarm")) {
         switch (containerName) {
           case "/buildfarm-server":
-            BfInstance scheduler = new BfInstance();
-            scheduler.setId("localhost:" + serverPortVal);
-            List schedulers = Collections.singletonList(new ArrayList().add(scheduler));
-            buildfarmCluster.setSchedulers(schedulers);
+            BfInstance server = new BfInstance();
+            server.setId("localhost:" + serverPortVal);
+            List servers = Collections.singletonList(new ArrayList().add(server));
+            buildfarmCluster.setServers(servers);
           case "/buildfarm-worker":
             BfInstance worker = new BfInstance();
             worker.setId("localhost:" + workerPortVal);
@@ -116,8 +119,8 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     if (buildfarmCluster.getRedis() != null
         && buildfarmCluster.getWorkers() != null
         && buildfarmCluster.getWorkers().size() > 0
-        && buildfarmCluster.getSchedulers() != null
-        && buildfarmCluster.getSchedulers().size() > 0) {
+        && buildfarmCluster.getServers() != null
+        && buildfarmCluster.getServers().size() > 0) {
       buildfarmClusters.add(buildfarmCluster);
     }
     return buildfarmClusters;

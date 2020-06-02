@@ -3,9 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="description" content="">
-	<meta name="author" content="80 Degrees West, LLC">
-	<meta name="generator" content="Jekyll v4.0.1">
+	<meta name="author" content="Yuriy Belenitsky">
 	<title>Buildfarm Manager</title>
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
@@ -31,7 +29,7 @@
 						<thead>
 						<tr>
 							<th>Cluster Name</th>
-							<th>Number of Schedulers</th>
+							<th>Number of Servers</th>
 							<th>Number of Workers</th>
 							<th>Endpoint</th>
 							<th></th>
@@ -40,7 +38,7 @@
 						<tbody>
 						<tr th:each="cluster : ${clusters}">
 							<td><span th:text="${cluster.clusterName}"></span></td>
-							<td><span th:text="${#lists.size(cluster.schedulers)}"></span></td>
+							<td><span th:text="${#lists.size(cluster.servers)}"></span></td>
 							<td><span th:text="${#lists.size(cluster.workers)}"></span></td>
 							<td><span th:text="${cluster.endpoint}"></span></td>
 							<td><a th:href="@{'/terminate/' + ${cluster.clusterName}}" class="btn btn-danger btn-sm actionable-btn">Terminate</a></td>
@@ -59,7 +57,7 @@
 		<div class="row">
 			<div class="col-12 col-md">
 				<img class="mb-2" src="" alt="" width="24" height="24">
-				<small class="d-block mb-3 text-muted">&copy; 2020 | <a href="https://www.github.com/80degreeswest/bfmgr">80degreeswest</a></small>
+				<small class="d-block mb-3 text-muted"><a href="https://www.github.com/80degreeswest/bfmgr">80degreeswest</a></small>
 			</div>
 		</div>
 	</footer>

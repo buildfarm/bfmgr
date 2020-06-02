@@ -6,11 +6,15 @@ import com.eightydegreeswest.bfmgr.model.BuildfarmCluster;
 import com.eightydegreeswest.bfmgr.model.CreateClusterRequest;
 import com.eightydegreeswest.bfmgr.service.BfMgrCtrl;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BfMgrCtrlGcp implements BfMgrCtrl {
+  private static final Logger logger = LoggerFactory.getLogger(BfMgrCtrlGcp.class);
+
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() {
     throw new UnsupportedOperationException();

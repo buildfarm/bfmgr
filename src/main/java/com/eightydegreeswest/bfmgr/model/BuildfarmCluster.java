@@ -8,6 +8,6 @@ public class BuildfarmCluster {
   private String clusterName;
   private String endpoint;
   private List<BfInstance> workers;
-  private List<BfInstance> schedulers;
+  private List<BfInstance> servers;
   private String redis;
 }
