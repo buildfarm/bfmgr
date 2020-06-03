@@ -28,29 +28,16 @@ wget https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.ja
 java -jar target/bfmgr-$rel.jar
 ```
 
-Go to http://localhost:8080 and click Create.
+Go to http://localhost:8080 and click Create
 
 #### Deploying in AWS
 
-Prerequisites:
-
-Create a new IAM role
+Run below CloudFormation template in your AWS account
 
 ```
-
+https://github.com/80degreeswest/bfmgr/blob/master/src/main/resources/bfmgr-aws.json
 ```
 
-Launch a new EC2 instance (include above role)
-
-Setup EC2 instance, download and run a binary release
-
-```
-yes | sudo yum install java
-mkdir /var/log/bfmgr
-chmod 0777 /var/log/bfmgr
-rel=<REL NUMBER>
-wget https://bfmgr.s3.amazonaws.com/bfmgr-$rel.jar
-java -jar bfmgr-$rel.jar
-```
-
-Go to http://<INSTANCE_IP>:8080 and click Create.
+Go to http://<INSTANCE_IP>:8080 and click Create
+Enter desired Subnet ID and Security Group and click Create
+You should have a working Buildfarm cluster setup in under 5 minutes

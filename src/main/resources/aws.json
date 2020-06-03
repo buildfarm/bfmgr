@@ -57,6 +57,10 @@
     "ServerConfigFile":{
       "Type":"String",
       "Description":"Server configuration file."
+    },
+    "RequiredTagName":{
+      "Type":"String",
+      "Description":"Required tag name (Asset)."
     }
   },
   "Resources":{
@@ -122,7 +126,22 @@
           },
           "InstanceType":{
             "Ref":"ServerInstanceType"
-          }
+          },
+          "TagSpecifications" : [
+            {
+              "ResourceType" : "launch-template",
+              "Tags" : [
+                {
+                  "Key" : {
+                    "Ref": "RequiredTagName"
+                  },
+                  "Value" : {
+                    "Ref": "ClusterName"
+                  }
+                }
+              ]
+            }
+          ]
         }
       },
       "DependsOn":[
@@ -204,7 +223,22 @@
           },
           "InstanceType":{
             "Ref":"WorkerInstanceType"
-          }
+          },
+          "TagSpecifications" : [
+            {
+              "ResourceType" : "launch-template",
+              "Tags" : [
+                {
+                  "Key" : {
+                    "Ref": "RequiredTagName"
+                  },
+                  "Value" : {
+                    "Ref": "ClusterName"
+                  }
+                }
+              ]
+            }
+          ]
         }
       },
       "DependsOn":[

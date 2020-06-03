@@ -23,6 +23,7 @@ import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.elasticloadbalancingv2.AmazonElasticLoadBalancing;
 import com.amazonaws.services.elasticloadbalancingv2.AmazonElasticLoadBalancingClientBuilder;
 import com.amazonaws.services.elasticloadbalancingv2.model.DescribeLoadBalancersRequest;
+import com.eightydegreeswest.bfmgr.BfArgs;
 import com.eightydegreeswest.bfmgr.model.BfInstance;
 import com.eightydegreeswest.bfmgr.model.BuildfarmCluster;
 import com.eightydegreeswest.bfmgr.model.CreateClusterRequest;
@@ -224,6 +225,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     parameters.add(getParameter("ServerTag", createClusterRequest.getServerTag()));
     parameters.add(getParameter("ServerConfigFile", createClusterRequest.getServerConfig()));
     parameters.add(getParameter("ClusterName", createClusterRequest.getClusterName()));
+    parameters.add(getParameter("RequiredTagName", getAssetTag()));
     return parameters;
   }
 
@@ -256,13 +258,17 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
 
   private List<Tag> parseExtraTags() {
     List<Tag> extraTags = new ArrayList<>();
-    if (bfArgs.containsKey("--tags")) {
-      for (String cmdTagPair : bfArgs.get("--tags").split(",")) {
+    if (bfArgs.containsKey(BfArgs.TAGS)) {
+      for (String cmdTagPair : bfArgs.get(BfArgs.TAGS).split(",")) {
         String[] cmdTag = cmdTagPair.split("=");
         Tag tag = new Tag().withKey(cmdTag[0]).withValue(cmdTag[1]);
         extraTags.add(tag);
       }
     }
     return extraTags;
+  }
+
+  private String getAssetTag() {
+    return (bfArgs.containsKey(BfArgs.ASSET)) ? bfArgs.get(BfArgs.ASSET) : "Asset";
   }
 }

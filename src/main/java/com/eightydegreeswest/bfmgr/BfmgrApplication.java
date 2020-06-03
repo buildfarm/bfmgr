@@ -58,7 +58,7 @@ public class BfmgrApplication {
 	}
 
 	private boolean deployedInAws() {
-		if ("aws".equalsIgnoreCase(bfArgs.get("--deploy"))) {
+		if ("aws".equalsIgnoreCase(bfArgs.get(BfArgs.DEPLOY))) {
 			return true;
 		}
 		try (Socket socket = new Socket()) {
@@ -70,7 +70,7 @@ public class BfmgrApplication {
 	}
 
 	private boolean deployedInGcp() {
-		if ("gcp".equalsIgnoreCase(bfArgs.get("--deploy"))) {
+		if ("gcp".equalsIgnoreCase(bfArgs.get(BfArgs.DEPLOY))) {
 			return true;
 		}
 		return false;

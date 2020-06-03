@@ -1,0 +1,123 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Buildfarm Manager",
+    "Parameters": {
+        "SecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup::Id",
+            "Description": "Enter VPC Security Group"
+        },
+        "SubnetId": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Enter Subnet ID"
+        },
+        "AssetTagName": {
+            "Type": "String",
+            "Default": "Asset",
+            "Description": "Enter required asset tag name"
+        }
+    },
+    "Resources": {
+        "BfMgrRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version" : "2012-10-17",
+                    "Statement": [ {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [ "ec2.amazonaws.com" ]
+                        },
+                        "Action": [ "sts:AssumeRole" ]
+                    } ]
+                },
+                "Path": "/",
+                "Description": "Buildfarm Manager Role",
+                "Policies": [
+                    {
+                        "PolicyName": "BuildfarmManager",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "cloudformation:*",
+                                        "autoscaling:*",
+                                        "ec2:*",
+                                        "elasticache:*",
+                                        "elasticloadbalancing:*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "RoleName": "buildfarm-manager",
+                "Tags": [
+                    {
+                        "Key" : "Resource",
+                        "Value" : "Bfmgr"
+                    },
+                    {
+                        "Key" : {
+                            "Ref": "AssetTagName"
+                        },
+                        "Value" : "Bfmgr"
+                    }
+                ]
+            }
+        },
+        "BfMgrEc2": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": "ami-0323c3dd2da7fb37d",
+                "InstanceType": "t2.micro",
+                "SubnetId": {
+                    "Ref": "SubnetId"
+                },
+                "SecurityGroupIds": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "IamInstanceProfile": {
+                    "Ref": "BfMgrRole"
+                },
+                "Tags": [
+                    {
+                        "Key" : "Name",
+                        "Value" : "Buildfarm Manager"
+                    },
+                    {
+                        "Key" : "Resource",
+                        "Value" : "Bfmgr"
+                    },
+                    {
+                        "Key" : {
+                            "Ref": "AssetTagName"
+                        },
+                        "Value" : "Bfmgr"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash\n\n",
+                                "yum install java -y\n",
+                                "rel=1.0.0",
+                                "wget -N https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar\n",
+                                "mkdir /var/log/bfmgr && chmod 0777 /var/log/bfmgr\n",
+                                "java -jar bfmgr-$rel.jar &\n",
+                                "disown\n"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "DependsOn": [
+                "BfMgrRole"
+            ]
+        }
+    }
+}
