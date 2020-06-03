@@ -68,6 +68,13 @@
                 ]
             }
         },
+        "BfMgrInstanceProfile" : {
+            "Type" : "AWS::IAM::InstanceProfile",
+            "Properties" : {
+                "Path" : "/",
+                "Roles" : ["buildfarm-manager"]
+            }
+        },
         "BfMgrEc2": {
             "Type": "AWS::EC2::Instance",
             "Properties": {
@@ -80,7 +87,7 @@
                     "Ref": "SecurityGroup"
                 }],
                 "IamInstanceProfile": {
-                    "Ref": "BfMgrRole"
+                    "Ref": "BfMgrInstanceProfile"
                 },
                 "Tags": [
                     {
