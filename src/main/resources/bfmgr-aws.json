@@ -119,6 +119,11 @@
                             [
                                 "#!/bin/bash\n\n",
                                 "yum install java -y\n",
+                                "wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb\n",
+                                "dpkg -i amazon-ssm-agent.deb\n",
+                                "status amazon-ssm-agent\n",
+                                "start amazon-ssm-agent\n",
+                                "status amazon-ssm-agent\n",
                                 "rel=", { "Ref": "ReleaseNumber" }, "\n",
                                 "wget -N https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar\n",
                                 "mkdir /var/log/bfmgr && chmod 0777 /var/log/bfmgr\n",

@@ -89,6 +89,11 @@
                   },
                   " -O shard-server.config\n",
                   "sed -e \"s/localhost:6379/$REDIS_ENDPOINT:6379/g\" shard-server.config > /var/lib/buildfarm-server/server.config\n",
+                  "wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb\n",
+                  "dpkg -i amazon-ssm-agent.deb\n",
+                  "status amazon-ssm-agent\n",
+                  "start amazon-ssm-agent\n",
+                  "status amazon-ssm-agent\n",
                   "yes | yum install docker\n",
                   "service docker start\n",
                   "usermod -a -G docker ec2-user\n",
@@ -109,8 +114,7 @@
                   {
                     "Ref":"ServerTag"
                   },
-                  " /var/lib/buildfarm-server/server.config -p 8980\n",
-                  "done\n"
+                  " /var/lib/buildfarm-server/server.config -p 8980\n"
                 ]
               ]
             }
@@ -173,7 +177,7 @@
                   "#!/bin/bash\n\n",
                   "mkdir -p /tmp/worker\n",
                   "#set worker public name\n",
-                  "PUBLIC_NAME=$(curl http://169.254.169.254/latest/meta-data/local-ipv4):8980\n",
+                  "PUBLIC_NAME=$(curl http://169.254.169.254/latest/meta-data/local-ipv4):8981\n",
                   "REDIS_ENDPOINT=",
                   {
                     "Fn::GetAtt":[
@@ -191,9 +195,6 @@
                   "sed -e \"s/localhost:6379/$REDIS_ENDPOINT:6379/g\" shard-worker.config > /var/lib/buildfarm-shard-worker/worker.config\n",
                   "#activate cloudwatch agent\n",
                   "rm /etc/init/amazon-cloudwatch-agent.override\n",
-                  "#install ssm\n",
-                  "mkdir /tmp/ssm\n",
-                  "cd /tmp/ssm\n",
                   "wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb\n",
                   "dpkg -i amazon-ssm-agent.deb\n",
                   "status amazon-ssm-agent\n",
@@ -219,8 +220,7 @@
                   {
                     "Ref":"WorkerTag"
                   },
-                  " /var/lib/buildfarm-shard-worker/worker.config --public_name=\"$PUBLIC_NAME\"\n",
-                  "done\n"
+                  " /var/lib/buildfarm-shard-worker/worker.config --public_name=\"$PUBLIC_NAME\"\n"
                 ]
               ]
             }
