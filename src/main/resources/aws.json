@@ -129,7 +129,20 @@
           },
           "TagSpecifications" : [
             {
-              "ResourceType" : "launch-template",
+              "ResourceType" : "instance",
+              "Tags" : [
+                {
+                  "Key" : {
+                    "Ref": "RequiredTagName"
+                  },
+                  "Value" : {
+                    "Ref": "ClusterName"
+                  }
+                }
+              ]
+            },
+            {
+              "ResourceType" : "volume",
               "Tags" : [
                 {
                   "Key" : {
@@ -226,7 +239,20 @@
           },
           "TagSpecifications" : [
             {
-              "ResourceType" : "launch-template",
+              "ResourceType" : "instance",
+              "Tags" : [
+                {
+                  "Key" : {
+                    "Ref": "RequiredTagName"
+                  },
+                  "Value" : {
+                    "Ref": "ClusterName"
+                  }
+                }
+              ]
+            },
+            {
+              "ResourceType" : "volume",
               "Tags" : [
                 {
                   "Key" : {

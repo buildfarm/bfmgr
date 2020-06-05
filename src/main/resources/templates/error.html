@@ -23,9 +23,11 @@
 	<div class="card-deck mb-3 text-center">
 		<p class="mb-4"></p>
 		<p>
-			<span th:text="${status}">status</span>] <span th:text="${error}">error</span>
+			[<span th:text="${status}">status</span>] <span th:text="${error}">error</span>
 		</p>
 		<p th:text="${message}">message</p>
+		<p th:text="${exception}">exception</p>
+		<p th:text="${trace}">trace</p>
 	</div>
 
 	<footer class="pt-4 my-md-5 pt-md-5 border-top">

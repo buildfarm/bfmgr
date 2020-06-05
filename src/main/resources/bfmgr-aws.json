@@ -14,6 +14,10 @@
             "Type": "String",
             "Default": "Asset",
             "Description": "Enter required asset tag name"
+        },
+        "ReleaseNumber": {
+            "Type": "String",
+            "Description": "Enter bfmgr release number"
         }
     },
     "Resources": {
@@ -73,7 +77,10 @@
             "Properties" : {
                 "Path" : "/",
                 "Roles" : ["buildfarm-manager"]
-            }
+            },
+            "DependsOn": [
+                "BfMgrRole"
+            ]
         },
         "BfMgrEc2": {
             "Type": "AWS::EC2::Instance",
@@ -112,7 +119,7 @@
                             [
                                 "#!/bin/bash\n\n",
                                 "yum install java -y\n",
-                                "rel=1.0.0",
+                                "rel=", { "Ref": "ReleaseNumber" }, "\n",
                                 "wget -N https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar\n",
                                 "mkdir /var/log/bfmgr && chmod 0777 /var/log/bfmgr\n",
                                 "java -jar bfmgr-$rel.jar &\n",
@@ -123,7 +130,8 @@
                 }
             },
             "DependsOn": [
-                "BfMgrRole"
+                "BfMgrRole",
+                "BfMgrInstanceProfile"
             ]
         }
     }
