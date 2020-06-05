@@ -375,6 +375,15 @@
             "Key" : "InstanceType",
             "PropagateAtLaunch" : "True",
             "Value" : "server"
+          },
+          {
+            "Key" : {
+              "Ref": "RequiredTagName"
+            },
+            "PropagateAtLaunch" : "True",
+            "Value" : {
+              "Ref": "ClusterName"
+            }
           }
         ]
       },
@@ -420,6 +429,15 @@
             "Key" : "InstanceType",
             "PropagateAtLaunch" : "True",
             "Value" : "worker"
+          },
+          {
+            "Key" : {
+              "Ref": "RequiredTagName"
+            },
+            "PropagateAtLaunch" : "True",
+            "Value" : {
+              "Ref": "ClusterName"
+            }
           }
         ]
       },
