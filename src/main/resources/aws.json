@@ -61,6 +61,12 @@
     "RequiredTagName":{
       "Type":"String",
       "Description":"Required tag name (Asset)."
+    },
+    "ElbType":{
+      "Type":"String",
+      "Default" : "internet-facing",
+      "AllowedValues" : ["internet-facing", "internal"],
+      "Description":"Load balancer type."
     }
   },
   "Resources":{
@@ -285,7 +291,9 @@
     "LoadBalancerServer":{
       "Type":"AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties":{
-        "Scheme":"internet-facing",
+        "Scheme":{
+          "Ref":  "ElbType"
+        },
         "Subnets":{
           "Ref":"SubnetPool"
         },

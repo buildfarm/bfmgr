@@ -98,6 +98,13 @@
 						</select>
 					</div>
 					<div class="form-group row">
+						<label for="elbType" class="col-sm-3 col-form-label">ELB Type</label>
+						<select class="col-sm-8" id="elbType" th:field="*{elbType}">
+							<option value="internet-facing">internet-facing</option>
+							<option value="internal">internal</option>
+						</select>
+					</div>
+					<div class="form-group row">
 						<label for="ami" class="col-sm-3 col-form-label">AMI</label>
 						<input class="col-sm-8" id="ami" type="text" th:field="*{ami}" />
 					</div>

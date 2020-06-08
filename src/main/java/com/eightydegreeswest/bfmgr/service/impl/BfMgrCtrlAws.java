@@ -142,6 +142,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     createClusterRequest.setWorkerInstanceType(defaultWorkerInstanceType);
     createClusterRequest.setWorkerRepo(workerRepo);
     createClusterRequest.setWorkerTag(buildfarmTag);
+    createClusterRequest.setElbType("internet-facing");
     return createClusterRequest;
   }
 
@@ -226,6 +227,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     parameters.add(getParameter("ServerConfigFile", createClusterRequest.getServerConfig()));
     parameters.add(getParameter("ClusterName", createClusterRequest.getClusterName()));
     parameters.add(getParameter("RequiredTagName", getAssetTag()));
+    parameters.add(getParameter("ElbType", createClusterRequest.getElbType()));
     return parameters;
   }
 
