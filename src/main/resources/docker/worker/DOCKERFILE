@@ -1,0 +1,6 @@
+FROM ubuntu:bionic
+MAINTAINER 80degreeswest, https://github.com/80degreeswest
+RUN apt-get update && apt-get install -y \
+  default-jre \
+  default-jdk \
+  gcc

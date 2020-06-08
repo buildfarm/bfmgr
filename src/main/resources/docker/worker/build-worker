@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker build -t 80dw/ubuntu-java:bionic-java11-gcc -f src/main/resources/docker/worker/DOCKERFILE .
+docker push 80dw/ubuntu-java:bionic-java11-gcc

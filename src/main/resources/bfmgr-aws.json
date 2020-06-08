@@ -50,7 +50,8 @@
                                         "ec2:*",
                                         "elasticache:*",
                                         "elasticloadbalancing:*",
-                                        "ssm:*"
+                                        "ssm:*",
+                                        "s3:*"
                                     ],
                                     "Resource": "*"
                                 }
