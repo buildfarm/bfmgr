@@ -126,6 +126,9 @@
             }
           },
           "InstanceInitiatedShutdownBehavior":"terminate",
+          "IamInstanceProfile" : {
+            "Name" : "buildfarm-manager"
+          },
           "SecurityGroupIds":[
             {
               "Ref":"SecurityGroup"
@@ -232,6 +235,9 @@
             }
           },
           "InstanceInitiatedShutdownBehavior":"terminate",
+          "IamInstanceProfile" : {
+            "Name" : "buildfarm-manager"
+          },
           "SecurityGroupIds":[
             {
               "Ref":"SecurityGroup"
