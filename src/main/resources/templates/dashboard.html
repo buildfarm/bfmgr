@@ -105,6 +105,13 @@
 						</select>
 					</div>
 					<div class="form-group row">
+						<label for="keyName" class="col-sm-3 col-form-label">SSH Key Name</label>
+						<select class="col-sm-8" id="keyName" th:field="*{keyName}">
+							<option value="">Select SSH Key</option>
+							<option th:each="keyNameItem : ${keyNamesList}" th:value="${ keyNameItem.getKeyName() }"><p th:text="${ keyNameItem.getKeyName() }" th:remove="tag"></p></option>
+						</select>
+					</div>
+					<div class="form-group row">
 						<label for="ami" class="col-sm-3 col-form-label">AMI</label>
 						<input class="col-sm-8" id="ami" type="text" th:field="*{ami}" />
 					</div>

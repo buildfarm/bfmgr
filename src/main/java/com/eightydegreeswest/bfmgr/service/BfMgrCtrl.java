@@ -1,5 +1,6 @@
 package com.eightydegreeswest.bfmgr.service;
 
+import com.amazonaws.services.ec2.model.KeyPairInfo;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.eightydegreeswest.bfmgr.model.BuildfarmCluster;
@@ -15,4 +16,5 @@ public interface BfMgrCtrl {
   CreateClusterRequest getDefaultCreateClusterRequest();
   List<Subnet> getSubnets();
   List<SecurityGroup> getSecurityGroups();
+  List<KeyPairInfo> getKeyNames();
 }

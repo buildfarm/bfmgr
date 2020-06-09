@@ -26,6 +26,7 @@ public class Dashboard {
     model.addAttribute("createClusterRequest", bfMgrCtrl.getDefaultCreateClusterRequest());
     model.addAttribute("subnetList", bfMgrCtrl.getSubnets());
     model.addAttribute("securityGroupList", bfMgrCtrl.getSecurityGroups());
+    model.addAttribute("keyNamesList", bfMgrCtrl.getKeyNames());
     model.addAttribute("clusters", bfMgrCtrl.getBuildfarmClusters());
     return "dashboard";
   }

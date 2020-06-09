@@ -19,4 +19,5 @@ public class CreateClusterRequest {
   private String workerTag;
   private String workerConfig;
   private String elbType;
+  private String keyName;
 }

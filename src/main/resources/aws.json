@@ -67,7 +67,14 @@
       "Default" : "internet-facing",
       "AllowedValues" : ["internet-facing", "internal"],
       "Description":"Load balancer type."
+    },
+    "KeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance"
     }
+  },
+  "Conditions": {
+    "HasKeyName": {"Fn::Not": [{"Fn::Equals": ["", {"Ref": "KeyName"}]}]}
   },
   "Resources":{
     "TemplateServer":{
@@ -126,6 +133,7 @@
             }
           },
           "InstanceInitiatedShutdownBehavior":"terminate",
+          "KeyName": {"Fn::If": ["HasKeyName", {"Ref": "KeyName"}, {"Ref": "AWS::NoValue"}]},
           "IamInstanceProfile" : {
             "Name" : "buildfarm-manager"
           },
@@ -235,6 +243,7 @@
             }
           },
           "InstanceInitiatedShutdownBehavior":"terminate",
+          "KeyName": {"Fn::If": ["HasKeyName", {"Ref": "KeyName"}, {"Ref": "AWS::NoValue"}]},
           "IamInstanceProfile" : {
             "Name" : "buildfarm-manager"
           },
