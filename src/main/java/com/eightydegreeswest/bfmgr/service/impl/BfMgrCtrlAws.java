@@ -17,6 +17,7 @@ import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.KeyPairInfo;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
@@ -143,6 +144,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     createClusterRequest.setWorkerRepo(workerRepo);
     createClusterRequest.setWorkerTag(buildfarmTag);
     createClusterRequest.setElbType("internet-facing");
+    createClusterRequest.setKeyName("");
     return createClusterRequest;
   }
 
@@ -154,6 +156,15 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   @Override
   public List<SecurityGroup> getSecurityGroups() {
     return awsEc2Client.describeSecurityGroups().getSecurityGroups();
+  }
+
+  @Override
+  public List<KeyPairInfo> getKeyNames() {
+    try {
+      return awsEc2Client.describeKeyPairs().getKeyPairs();
+    } catch (Exception e) {
+      return new ArrayList<>();
+    }
   }
 
   private String getLoadBalancerEndpoint(String clusterName) {
@@ -228,6 +239,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     parameters.add(getParameter("ClusterName", createClusterRequest.getClusterName()));
     parameters.add(getParameter("RequiredTagName", getAssetTag()));
     parameters.add(getParameter("ElbType", createClusterRequest.getElbType()));
+    parameters.add(getParameter("KeyName", createClusterRequest.getKeyName()));
     return parameters;
   }
 

@@ -1,5 +1,6 @@
 package com.eightydegreeswest.bfmgr.service.impl;
 
+import com.amazonaws.services.ec2.model.KeyPairInfo;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.eightydegreeswest.bfmgr.model.BfInstance;
@@ -12,7 +13,6 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.DockerClientBuilder;
 import java.io.File;
@@ -191,6 +191,11 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
 
   @Override
   public List<SecurityGroup> getSecurityGroups() {
+    return new ArrayList<>();
+  }
+
+  @Override
+  public List<KeyPairInfo> getKeyNames() {
     return new ArrayList<>();
   }
 

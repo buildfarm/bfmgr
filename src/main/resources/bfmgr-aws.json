@@ -18,7 +18,14 @@
         "ReleaseNumber": {
             "Type": "String",
             "Description": "Enter bfmgr release number"
+        },
+        "KeyName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance"
         }
+    },
+    "Conditions": {
+        "HasKeyName": {"Fn::Not": [{"Fn::Equals": ["", {"Ref": "KeyName"}]}]}
     },
     "Resources": {
         "BfMgrRole": {
@@ -78,6 +85,7 @@
             "Type" : "AWS::IAM::InstanceProfile",
             "Properties" : {
                 "Path" : "/",
+                "InstanceProfileName" : "buildfarm-manager",
                 "Roles" : ["buildfarm-manager"]
             },
             "DependsOn": [
@@ -134,7 +142,8 @@
                             ]
                         ]
                     }
-                }
+                },
+                "KeyName": {"Fn::If": ["HasKeyName", {"Ref": "KeyName"}, {"Ref": "AWS::NoValue"}]}
             },
             "DependsOn": [
                 "BfMgrRole",
