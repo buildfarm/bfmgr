@@ -59,9 +59,8 @@
                                         "elasticloadbalancing:*",
                                         "ssm:*",
                                         "s3:*",
-                                        "iam:ListAccessKeys",
-                                        "iam:GetSSHPublicKey",
-                                        "iam:ListSSHPublicKeys"
+                                        "sts:AssumeRole",
+                                        "iam:PassRole"
                                     ],
                                     "Resource": "*"
                                 }
