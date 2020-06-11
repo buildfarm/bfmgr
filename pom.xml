@@ -31,10 +31,14 @@
 			<artifactId>aws-java-sdk-autoscaling</artifactId>
 			<version>${aws.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-cloudformation</artifactId>
+			<version>${aws.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-ecr</artifactId>
 			<version>${aws.version}</version>
 		</dependency>
 		<dependency>

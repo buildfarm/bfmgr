@@ -1,8 +1,14 @@
 package com.eightydegreeswest.bfmgr.service.impl;
 
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
+import com.amazonaws.services.ecr.AmazonECR;
+import com.amazonaws.services.ecr.AmazonECRClientBuilder;
+import com.amazonaws.services.ecr.model.AuthorizationData;
+import com.amazonaws.services.ecr.model.GetAuthorizationTokenRequest;
+import com.amazonaws.services.ecr.model.GetAuthorizationTokenResult;
 import com.eightydegreeswest.bfmgr.model.BfInstance;
 import com.eightydegreeswest.bfmgr.model.BuildfarmCluster;
 import com.eightydegreeswest.bfmgr.model.CreateClusterRequest;
@@ -14,7 +20,9 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +49,7 @@ import org.springframework.stereotype.Service;
 public class BfMgrCtrlLocal implements BfMgrCtrl {
   private static final Logger logger = LoggerFactory.getLogger(BfMgrCtrlLocal.class);
   private static DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+  private static AmazonECR ecrClient;
 
   @Value("${container.name.server}")
   private String serverContainer;
@@ -84,6 +95,15 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
 
   @Value("${port.worker}")
   private int workerPortVal;
+
+  public BfMgrCtrlLocal() {
+    try {
+      String region = getRegion();
+      ecrClient = AmazonECRClientBuilder.standard().withRegion(region).build();
+    } catch (Exception e) {
+      ecrClient = null;
+    }
+  }
 
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() throws UnknownHostException {
@@ -132,8 +152,8 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     createPath(casPath);
 
     pullImage(redisRepo, redisTag);
-    pullImage(serverRepo, buildfarmTag);
-    pullImage(workerRepo, buildfarmTag);
+    pullImage(createClusterRequest.getServerRepo(), createClusterRequest.getServerTag());
+    pullImage(createClusterRequest.getWorkerRepo(), createClusterRequest.getWorkerTag());
 
     Ports portBindings = new Ports();
     portBindings.bind(ExposedPort.tcp(redisPortVal), Ports.Binding.bindPort(redisPortVal));
@@ -233,7 +253,48 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
 
   private void pullImage(String imageRepo, String tag) {
     try {
-      dockerClient.pullImageCmd(imageRepo).withTag(tag).start().awaitCompletion(5, TimeUnit.MINUTES);
-    } catch (Exception e) { }
+      if (imageRepo.contains("amazonaws.com")) {
+        pullEcrImage(imageRepo, tag);
+      } else {
+        logger.info("Pulling image {}:{} from Dockerhub", imageRepo, tag);
+        dockerClient
+            .pullImageCmd(imageRepo)
+            .withTag(tag)
+            .start()
+            .awaitCompletion(5, TimeUnit.MINUTES);
+        }
+    } catch (Exception e) {
+      logger.error("Could not pull image {}:{} from repository", imageRepo, tag, e);
+    }
+  }
+
+  private void pullEcrImage(String imageRepo, String tag) throws InterruptedException {
+    logger.info("Pulling image {}:{} from ECR", imageRepo, tag);
+    GetAuthorizationTokenRequest getAuthTokenRequest = new GetAuthorizationTokenRequest();
+    List<String> registryIds = new ArrayList<>();
+    registryIds.add(imageRepo.substring(0, 12));
+    getAuthTokenRequest.setRegistryIds(registryIds);
+    GetAuthorizationTokenResult getAuthTokenResult = ecrClient.getAuthorizationToken(getAuthTokenRequest);
+    AuthorizationData authData = getAuthTokenResult.getAuthorizationData().get(0);
+    String userPassword = StringUtils.newStringUtf8(Base64.decodeBase64(authData.getAuthorizationToken()));
+    String user = userPassword.substring(0, userPassword.indexOf(":"));
+    String password = userPassword.substring(userPassword.indexOf(":")+1);
+    DockerClientConfig ecrConfig = DefaultDockerClientConfig.createDefaultConfigBuilder()
+      .withDockerTlsVerify(false)
+      .withRegistryUsername(user)
+      .withRegistryPassword(password)
+      .withRegistryUrl(authData.getProxyEndpoint())
+      .build();
+    DockerClient dockerClient = DockerClientBuilder.getInstance(ecrConfig).build();
+    dockerClient
+      .pullImageCmd(imageRepo)
+      .withTag(tag)
+      .withAuthConfig(dockerClient.authConfig())
+      .start()
+      .awaitCompletion(5, TimeUnit.MINUTES);
+  }
+
+  private String getRegion() {
+    return Regions.US_EAST_1.getName();
   }
 }

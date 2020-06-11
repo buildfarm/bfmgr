@@ -68,6 +68,11 @@
       "AllowedValues" : ["internet-facing", "internal"],
       "Description":"Load balancer type."
     },
+    "Region":{
+      "Type":"String",
+      "Default" : "us-east-1",
+      "Description":"Region."
+    },
     "KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance"
@@ -110,6 +115,8 @@
                   "yes | yum install docker\n",
                   "service docker start\n",
                   "usermod -a -G docker ec2-user\n",
+                  "output=$(aws ecr get-login --no-include-email --region ", {"Ref" : "Region"}, ") && $output\n",
+                  "echo $output\n",
                   "docker pull ",
                   {
                     "Ref":"ServerRepo"
@@ -220,6 +227,8 @@
                   "yes | yum install docker\n",
                   "service docker start\n",
                   "usermod -a -G docker ec2-user\n",
+                  "output=$(aws ecr get-login --no-include-email --region ", {"Ref" : "Region"}, ") && $output\n",
+                  "echo $output\n",
                   "docker pull ",
                   {
                     "Ref":"WorkerRepo"

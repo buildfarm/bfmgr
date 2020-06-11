@@ -241,6 +241,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     parameters.add(getParameter("RequiredTagName", getAssetTag()));
     parameters.add(getParameter("ElbType", createClusterRequest.getElbType()));
     parameters.add(getParameter("KeyName", createClusterRequest.getKeyName()));
+    parameters.add(getParameter("Region", getRegion()));
     return parameters;
   }
 
