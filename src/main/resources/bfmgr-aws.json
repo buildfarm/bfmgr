@@ -57,6 +57,7 @@
                                         "ec2:*",
                                         "elasticache:*",
                                         "elasticloadbalancing:*",
+                                        "ecr:*",
                                         "ssm:*",
                                         "s3:*",
                                         "sts:AssumeRole",

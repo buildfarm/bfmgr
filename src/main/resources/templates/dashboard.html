@@ -72,54 +72,49 @@
 					<span aria-hidden="true">×</span>
 				</button>
 			</div>
-			<div th:if="${createClusterRequest.clusterName == null}" class="modal-body">Create a new local Buildfarm cluster?</div>
-			<div th:if="${createClusterRequest.clusterName == null}" class="modal-footer">
-				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-				<a class="btn btn-primary" href="/create">Create</a>
-			</div>
-			<form th:if="${createClusterRequest.clusterName != null}" action="#" th:action="@{/create}" th:object="${createClusterRequest}" method="post">
+			<form action="#" th:action="@{/create}" th:object="${createClusterRequest}" method="post">
 				<div class="modal-body">
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="clusterName" class="col-sm-3 col-form-label">Cluster Name</label>
 						<input class="col-sm-8" id="clusterName" type="text" th:field="*{clusterName}" />
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="subnet" class="col-sm-3 col-form-label">Subnet ID</label>
 						<select class="col-sm-8" id="subnet" th:field="*{subnet}">
 							<option value="">Select Subnet</option>
 							<option th:each="subnetListItem : ${subnetList}" th:value="${ subnetListItem.getSubnetId() }"><p th:text="${ subnetListItem.getSubnetId() }" th:remove="tag"></p></option>
 						</select>
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="securityGroup" class="col-sm-3 col-form-label">Security Group</label>
 						<select class="col-sm-8" id="securityGroup" th:field="*{securityGroupId}">
 							<option value="">Select Security Group</option>
 							<option th:each="securityGroupItem : ${securityGroupList}" th:value="${ securityGroupItem.getGroupId() }"><p th:text="${ securityGroupItem.getGroupName() + ' (' + securityGroupItem.getGroupId() + ')' }" th:remove="tag"></p></option>
 						</select>
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="elbType" class="col-sm-3 col-form-label">ELB Type</label>
 						<select class="col-sm-8" id="elbType" th:field="*{elbType}">
 							<option value="internet-facing">internet-facing</option>
 							<option value="internal">internal</option>
 						</select>
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="keyName" class="col-sm-3 col-form-label">SSH Key Name</label>
 						<select class="col-sm-8" id="keyName" th:field="*{keyName}">
 							<option value="">Select SSH Key</option>
 							<option th:each="keyNameItem : ${keyNamesList}" th:value="${ keyNameItem.getKeyName() }"><p th:text="${ keyNameItem.getKeyName() }" th:remove="tag"></p></option>
 						</select>
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="ami" class="col-sm-3 col-form-label">AMI</label>
 						<input class="col-sm-8" id="ami" type="text" th:field="*{ami}" />
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="redisInstanceType" class="col-sm-3 col-form-label">Redis Size</label>
 						<input class="col-sm-8" id="redisInstanceType" type="text" th:field="*{redisInstanceType}" />
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="serverInstanceType" class="col-sm-3 col-form-label">Server Size</label>
 						<input class="col-sm-8" id="serverInstanceType" type="text" th:field="*{serverInstanceType}" />
 					</div>
@@ -135,7 +130,7 @@
 						<label for="serverConfig" class="col-sm-3 col-form-label">Server Config</label>
 						<input class="col-sm-8" id="serverConfig" type="text" th:field="*{serverConfig}" />
 					</div>
-					<div class="form-group row">
+					<div th:if="${createClusterRequest.deploymentType == 'aws'}" class="form-group row">
 						<label for="workerInstanceType" class="col-sm-3 col-form-label">Worker Size</label>
 						<input class="col-sm-8" id="workerInstanceType" type="text" th:field="*{workerInstanceType}" />
 					</div>

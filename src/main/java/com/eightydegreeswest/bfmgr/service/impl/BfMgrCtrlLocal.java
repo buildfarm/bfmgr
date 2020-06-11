@@ -127,8 +127,8 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
   public void createCluster(CreateClusterRequest createClusterRequest) throws IOException {
     terminateCluster("Local");
     createPath(configPath);
-    downloadFile(remoteServerConfig, Paths.get(configPath + "/shard-server.config").toFile());
-    downloadFile(remoteWorkerConfig, Paths.get(configPath + "/shard-worker.config").toFile());
+    downloadFile(createClusterRequest.getServerConfig(), Paths.get(configPath + "/shard-server.config").toFile());
+    downloadFile(createClusterRequest.getWorkerConfig(), Paths.get(configPath + "/shard-worker.config").toFile());
     createPath(casPath);
 
     pullImage(redisRepo, redisTag);
@@ -147,7 +147,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     portBindings = new Ports();
     portBindings.bind(ExposedPort.tcp(workerPortVal), Ports.Binding.bindPort(workerPortVal));
 
-    response = dockerClient.createContainerCmd(workerRepo + ":" + buildfarmTag)
+    response = dockerClient.createContainerCmd(createClusterRequest.getWorkerRepo() + ":" + createClusterRequest.getWorkerTag())
       .withName(workerContainer)
       .withHostConfig(HostConfig.newHostConfig()
         .withPortBindings(portBindings)
@@ -161,7 +161,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     portBindings = new Ports();
     portBindings.bind(ExposedPort.tcp(serverPortVal), Ports.Binding.bindPort(serverPortVal));
 
-    response = dockerClient.createContainerCmd(serverRepo + ":" + buildfarmTag)
+    response = dockerClient.createContainerCmd(createClusterRequest.getServerRepo() + ":" + createClusterRequest.getServerTag())
       .withName(serverContainer)
       .withHostConfig(HostConfig.newHostConfig()
         .withPortBindings(portBindings)
@@ -181,7 +181,16 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
 
   @Override
   public CreateClusterRequest getDefaultCreateClusterRequest() {
-    return new CreateClusterRequest();
+    CreateClusterRequest createClusterRequest = new CreateClusterRequest();
+    createClusterRequest.setDeploymentType("local");
+    createClusterRequest.setClusterName("buildfarm-test");
+    createClusterRequest.setServerConfig(remoteServerConfig);
+    createClusterRequest.setServerRepo(serverRepo);
+    createClusterRequest.setServerTag(buildfarmTag);
+    createClusterRequest.setWorkerConfig(remoteWorkerConfig);
+    createClusterRequest.setWorkerRepo(workerRepo);
+    createClusterRequest.setWorkerTag(buildfarmTag);
+    return createClusterRequest;
   }
 
   @Override

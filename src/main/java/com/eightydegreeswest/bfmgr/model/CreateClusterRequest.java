@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class CreateClusterRequest {
+  private String deploymentType;
   private String clusterName;
   private String redisInstanceType;
   private String serverInstanceType;

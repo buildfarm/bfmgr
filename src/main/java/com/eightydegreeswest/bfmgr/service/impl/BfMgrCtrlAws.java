@@ -130,6 +130,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   @Override
   public CreateClusterRequest getDefaultCreateClusterRequest() {
     CreateClusterRequest createClusterRequest = new CreateClusterRequest();
+    createClusterRequest.setDeploymentType("aws");
     createClusterRequest.setClusterName("buildfarm-test");
     createClusterRequest.setAmi(defaultAmi);
     createClusterRequest.setRedisInstanceType(defaultRedisInstanceType);

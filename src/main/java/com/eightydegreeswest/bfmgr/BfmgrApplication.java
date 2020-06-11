@@ -28,7 +28,9 @@ public class BfmgrApplication {
 	@Bean
 	@ApplicationScope
 	public BfMgrCtrl bfMgrCtrl() {
-		if (deployedInAws()) {
+		if ("local".equalsIgnoreCase(bfArgs.get(BfArgs.DEPLOY))) {
+			return new BfMgrCtrlLocal();
+		} else if (deployedInAws()) {
 			return new BfMgrCtrlAws();
 		} else if (deployedInGcp()) {
 			return new BfMgrCtrlGcp();
