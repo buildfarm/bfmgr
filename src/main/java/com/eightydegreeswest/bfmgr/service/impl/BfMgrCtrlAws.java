@@ -138,12 +138,11 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     createClusterRequest.setServerConfig(remoteServerConfig);
     createClusterRequest.setServerInstanceType(defaultServerInstanceType);
     createClusterRequest.setServerRepo(serverRepo);
-    createClusterRequest.setServerTag(buildfarmTag);
+    createClusterRequest.setBuildfarmTag(buildfarmTag);
     createClusterRequest.setSubnet("");
     createClusterRequest.setWorkerConfig(remoteWorkerConfig);
     createClusterRequest.setWorkerInstanceType(defaultWorkerInstanceType);
     createClusterRequest.setWorkerRepo(workerRepo);
-    createClusterRequest.setWorkerTag(buildfarmTag);
     createClusterRequest.setElbType("internet-facing");
     createClusterRequest.setKeyName("");
     return createClusterRequest;
@@ -232,10 +231,10 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     parameters.add(getParameter("SubnetPool", createClusterRequest.getSubnet()));
     parameters.add(getParameter("AmiImageId", createClusterRequest.getAmi()));
     parameters.add(getParameter("WorkerRepo", createClusterRequest.getWorkerRepo()));
-    parameters.add(getParameter("WorkerTag", createClusterRequest.getWorkerTag()));
+    parameters.add(getParameter("WorkerTag", createClusterRequest.getBuildfarmTag()));
     parameters.add(getParameter("WorkerConfigFile", createClusterRequest.getWorkerConfig()));
     parameters.add(getParameter("ServerRepo", createClusterRequest.getServerRepo()));
-    parameters.add(getParameter("ServerTag", createClusterRequest.getServerTag()));
+    parameters.add(getParameter("ServerTag", createClusterRequest.getBuildfarmTag()));
     parameters.add(getParameter("ServerConfigFile", createClusterRequest.getServerConfig()));
     parameters.add(getParameter("ClusterName", createClusterRequest.getClusterName()));
     parameters.add(getParameter("RequiredTagName", getAssetTag()));

@@ -152,8 +152,8 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     createPath(casPath);
 
     pullImage(redisRepo, redisTag);
-    pullImage(createClusterRequest.getServerRepo(), createClusterRequest.getServerTag());
-    pullImage(createClusterRequest.getWorkerRepo(), createClusterRequest.getWorkerTag());
+    pullImage(createClusterRequest.getServerRepo(), createClusterRequest.getBuildfarmTag());
+    pullImage(createClusterRequest.getWorkerRepo(), createClusterRequest.getBuildfarmTag());
 
     Ports portBindings = new Ports();
     portBindings.bind(ExposedPort.tcp(redisPortVal), Ports.Binding.bindPort(redisPortVal));
@@ -167,7 +167,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     portBindings = new Ports();
     portBindings.bind(ExposedPort.tcp(workerPortVal), Ports.Binding.bindPort(workerPortVal));
 
-    response = dockerClient.createContainerCmd(createClusterRequest.getWorkerRepo() + ":" + createClusterRequest.getWorkerTag())
+    response = dockerClient.createContainerCmd(createClusterRequest.getWorkerRepo() + ":" + createClusterRequest.getBuildfarmTag())
       .withName(workerContainer)
       .withHostConfig(HostConfig.newHostConfig()
         .withPortBindings(portBindings)
@@ -181,7 +181,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     portBindings = new Ports();
     portBindings.bind(ExposedPort.tcp(serverPortVal), Ports.Binding.bindPort(serverPortVal));
 
-    response = dockerClient.createContainerCmd(createClusterRequest.getServerRepo() + ":" + createClusterRequest.getServerTag())
+    response = dockerClient.createContainerCmd(createClusterRequest.getServerRepo() + ":" + createClusterRequest.getBuildfarmTag())
       .withName(serverContainer)
       .withHostConfig(HostConfig.newHostConfig()
         .withPortBindings(portBindings)
@@ -206,10 +206,9 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     createClusterRequest.setClusterName("buildfarm-test");
     createClusterRequest.setServerConfig(remoteServerConfig);
     createClusterRequest.setServerRepo(serverRepo);
-    createClusterRequest.setServerTag(buildfarmTag);
+    createClusterRequest.setBuildfarmTag(buildfarmTag);
     createClusterRequest.setWorkerConfig(remoteWorkerConfig);
     createClusterRequest.setWorkerRepo(workerRepo);
-    createClusterRequest.setWorkerTag(buildfarmTag);
     return createClusterRequest;
   }
 

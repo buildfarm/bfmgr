@@ -13,11 +13,10 @@ public class CreateClusterRequest {
   private String securityGroupId;
   private String subnet;
   private String ami;
+  private String buildfarmTag;
   private String serverRepo;
-  private String serverTag;
   private String serverConfig;
   private String workerRepo;
-  private String workerTag;
   private String workerConfig;
   private String elbType;
   private String keyName;

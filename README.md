@@ -25,7 +25,7 @@ Download and run a binary release
 ```
 rel=<RELEASE_NUMBER>
 wget https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar
-java -jar target/bfmgr-$rel.jar
+java -jar bfmgr-$rel.jar
 ```
 
 Go to http://localhost and click Create
