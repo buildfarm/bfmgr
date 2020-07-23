@@ -43,9 +43,10 @@ Alternatively, manually launch an EC2 instance with the IAM Role with specified 
 ```
 yum install java -y
 rel=<RELEASE_NUMBER>
+region=us-east-1
 wget -N https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar
 mkdir /var/log/bfmgr && chmod 0777 /var/log/bfmgr
-java -jar bfmgr-$rel.jar &
+java -jar bfmgr-$rel.jar --region $region &
 disown
 ```
 
