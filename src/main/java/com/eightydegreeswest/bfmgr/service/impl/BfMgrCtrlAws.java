@@ -1,8 +1,5 @@
 package com.eightydegreeswest.bfmgr.service.impl;
 
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.autoscaling.AmazonAutoScaling;
-import com.amazonaws.services.autoscaling.AmazonAutoScalingClientBuilder;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationAsyncClientBuilder;
 import com.amazonaws.services.cloudformation.model.CreateStackRequest;
@@ -50,11 +47,6 @@ import org.springframework.util.FileCopyUtils;
 public class BfMgrCtrlAws implements BfMgrCtrl {
   private static final Logger logger = LoggerFactory.getLogger(BfMgrCtrlAws.class);
 
-  private static AmazonCloudFormation awsCloudFormationClient;
-  private static AmazonEC2 awsEc2Client;
-  private static AmazonElasticLoadBalancing awsElbClient;
-  private static AmazonAutoScaling awsAsgClient;
-
   @Value("${container.repo.server}")
   private String serverRepo;
 
@@ -85,17 +77,12 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   @Autowired
   private Map<String, String> bfArgs;
 
-  public BfMgrCtrlAws() {
-    String region = getRegion();
-    awsCloudFormationClient = AmazonCloudFormationAsyncClientBuilder.standard().withRegion(region).build();
-    awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(region).build();
-    awsElbClient = AmazonElasticLoadBalancingClientBuilder.standard().withRegion(region).build();
-    awsAsgClient = AmazonAutoScalingClientBuilder.standard().withRegion(region).build();
-  }
+  public BfMgrCtrlAws() { }
 
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() {
     List<BuildfarmCluster> buildfarmClusters = new ArrayList<>();
+    AmazonCloudFormation awsCloudFormationClient = AmazonCloudFormationAsyncClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     for (StackSummary stack : awsCloudFormationClient.listStacks().getStackSummaries()) {
       if (stack.getTemplateDescription().equalsIgnoreCase("Buildfarm deployment using bfmgr") && !stack.getStackStatus().contains("DELETE")) {
         BuildfarmCluster buildfarmCluster = new BuildfarmCluster();
@@ -112,6 +99,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   @Override
   @Async
   public void createCluster(CreateClusterRequest createClusterRequest) {
+    AmazonCloudFormation awsCloudFormationClient = AmazonCloudFormationAsyncClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     CreateStackRequest createRequest = new CreateStackRequest();
     createRequest.setStackName(createClusterRequest.getClusterName());
     createRequest.setTemplateBody(loadCloudFormationJson());
@@ -123,6 +111,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
   @Override
   @Async
   public void terminateCluster(String clusterName) {
+    AmazonCloudFormation awsCloudFormationClient = AmazonCloudFormationAsyncClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     DeleteStackRequest deleteStackRequest = new DeleteStackRequest().withStackName(clusterName);
     awsCloudFormationClient.deleteStack(deleteStackRequest);
   }
@@ -150,17 +139,20 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
 
   @Override
   public List<Subnet> getSubnets() {
+    AmazonEC2 awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     return awsEc2Client.describeSubnets().getSubnets();
   }
 
   @Override
   public List<SecurityGroup> getSecurityGroups() {
+    AmazonEC2 awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     return awsEc2Client.describeSecurityGroups().getSecurityGroups();
   }
 
   @Override
   public List<KeyPairInfo> getKeyNames() {
     try {
+      AmazonEC2 awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
       return awsEc2Client.describeKeyPairs().getKeyPairs();
     } catch (Exception e) {
       return new ArrayList<>();
@@ -169,6 +161,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
 
   private String getLoadBalancerEndpoint(String clusterName) {
     try {
+      AmazonElasticLoadBalancing awsElbClient = AmazonElasticLoadBalancingClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
       return awsElbClient.describeLoadBalancers(new DescribeLoadBalancersRequest().withNames(clusterName)).getLoadBalancers().get(0).getDNSName();
       } catch (Exception e) {
       return "N/A";
@@ -185,6 +178,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
 
   private List<Instance> getAwsInstances(String clusterName, String instanceType) {
     List<Instance> instances = new ArrayList<>();
+    AmazonEC2 awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     DescribeInstancesResult instancesResult = awsEc2Client.describeInstances(
       new DescribeInstancesRequest().withFilters(new Filter().withName("tag-value").withValues(clusterName), new Filter().withName("tag-value").withValues(instanceType)));
     for (Reservation r : instancesResult.getReservations()) {
@@ -240,7 +234,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     parameters.add(getParameter("RequiredTagName", getAssetTag()));
     parameters.add(getParameter("ElbType", createClusterRequest.getElbType()));
     parameters.add(getParameter("KeyName", createClusterRequest.getKeyName()));
-    parameters.add(getParameter("Region", getRegion()));
+    parameters.add(getParameter("Region", bfArgs.get(BfArgs.REGION)));
     return parameters;
   }
 
@@ -263,11 +257,8 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     return tags;
   }
 
-  private String getRegion() {
-    return Regions.US_EAST_1.getName();
-  }
-
   private String getVpcId(String subnetId) {
+    AmazonEC2 awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     return awsEc2Client.describeSubnets(new DescribeSubnetsRequest().withSubnetIds(subnetId)).getSubnets().get(0).getVpcId();
   }
 

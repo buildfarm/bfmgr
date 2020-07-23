@@ -96,14 +96,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
   @Value("${port.worker}")
   private int workerPortVal;
 
-  public BfMgrCtrlLocal() {
-    try {
-      String region = getRegion();
-      ecrClient = AmazonECRClientBuilder.standard().withRegion(region).build();
-    } catch (Exception e) {
-      ecrClient = null;
-    }
-  }
+  public BfMgrCtrlLocal() { }
 
   @Override
   public List<BuildfarmCluster> getBuildfarmClusters() throws UnknownHostException {
@@ -268,7 +261,9 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
   }
 
   private void pullEcrImage(String imageRepo, String tag) throws InterruptedException {
-    logger.info("Pulling image {}:{} from ECR", imageRepo, tag);
+    String region = imageRepo.split(".")[3];
+    logger.info("Pulling image {}:{} from ECR in region {}", imageRepo, tag, region);
+    ecrClient = AmazonECRClientBuilder.standard().withRegion(region).build();
     GetAuthorizationTokenRequest getAuthTokenRequest = new GetAuthorizationTokenRequest();
     List<String> registryIds = new ArrayList<>();
     registryIds.add(imageRepo.substring(0, 12));
@@ -291,9 +286,5 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
       .withAuthConfig(dockerClient.authConfig())
       .start()
       .awaitCompletion(5, TimeUnit.MINUTES);
-  }
-
-  private String getRegion() {
-    return Regions.US_EAST_1.getName();
   }
 }

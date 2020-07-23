@@ -140,7 +140,8 @@
                                 "rel=", { "Ref": "ReleaseNumber" }, "\n",
                                 "wget -N https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar\n",
                                 "mkdir /var/log/bfmgr && chmod 0777 /var/log/bfmgr\n",
-                                "java -jar bfmgr-$rel.jar &\n",
+                                "REGION=curl http://169.254.169.254/latest/dynamic/instance-identity/document | grep region|awk -F\\\" '{print $4}'\n",
+                                "java -jar bfmgr-$rel.jar --region $REGION &\n",
                                 "disown\n"
                             ]
                         ]
