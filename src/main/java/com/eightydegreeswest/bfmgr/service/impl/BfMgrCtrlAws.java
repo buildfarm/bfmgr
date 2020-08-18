@@ -84,13 +84,17 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     List<BuildfarmCluster> buildfarmClusters = new ArrayList<>();
     AmazonCloudFormation awsCloudFormationClient = AmazonCloudFormationAsyncClientBuilder.standard().withRegion(bfArgs.get(BfArgs.REGION)).build();
     for (StackSummary stack : awsCloudFormationClient.listStacks().getStackSummaries()) {
-      if (stack.getTemplateDescription().equalsIgnoreCase("Buildfarm deployment using bfmgr") && !stack.getStackStatus().contains("DELETE")) {
-        BuildfarmCluster buildfarmCluster = new BuildfarmCluster();
-        buildfarmCluster.setClusterName(stack.getStackName());
-        buildfarmCluster.setEndpoint(getLoadBalancerEndpoint(buildfarmCluster.getClusterName()));
-        buildfarmCluster.setServers(getServers(buildfarmCluster.getClusterName()));
-        buildfarmCluster.setWorkers(getWorkers(buildfarmCluster.getClusterName()));
-        buildfarmClusters.add(buildfarmCluster);
+      try {
+        if (stack.getTemplateDescription().equalsIgnoreCase("Buildfarm deployment using bfmgr") && !stack.getStackStatus().contains("DELETE")) {
+          BuildfarmCluster buildfarmCluster = new BuildfarmCluster();
+          buildfarmCluster.setClusterName(stack.getStackName());
+          buildfarmCluster.setEndpoint(getLoadBalancerEndpoint(buildfarmCluster.getClusterName()));
+          buildfarmCluster.setServers(getServers(buildfarmCluster.getClusterName()));
+          buildfarmCluster.setWorkers(getWorkers(buildfarmCluster.getClusterName()));
+          buildfarmClusters.add(buildfarmCluster);
+        }
+      } catch (NullPointerException e) {
+        logger.error("Stack is not a Bfmgr created stack.");
       }
     }
     return buildfarmClusters;
