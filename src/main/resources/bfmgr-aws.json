@@ -61,7 +61,8 @@
                                         "ssm:*",
                                         "s3:*",
                                         "sts:AssumeRole",
-                                        "iam:PassRole"
+                                        "iam:PassRole",
+                                        "iam:CreateServiceLinkedRole"
                                     ],
                                     "Resource": "*"
                                 }
