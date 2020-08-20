@@ -70,7 +70,6 @@
     },
     "Region":{
       "Type":"String",
-      "Default" : { "Ref" : "AWS::Region" },
       "Description":"Region."
     },
     "KeyName": {

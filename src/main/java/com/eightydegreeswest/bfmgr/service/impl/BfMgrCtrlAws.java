@@ -239,6 +239,7 @@ public class BfMgrCtrlAws implements BfMgrCtrl {
     parameters.add(getParameter("ElbType", createClusterRequest.getElbType()));
     parameters.add(getParameter("KeyName", createClusterRequest.getKeyName()));
     parameters.add(getParameter("Region", bfArgs.get(BfArgs.REGION)));
+    logger.info("Using parameters: {}", parameters);
     return parameters;
   }
 
