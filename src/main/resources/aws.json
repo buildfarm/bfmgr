@@ -125,7 +125,7 @@
                     "Ref":"ServerTag"
                   },
                   "\n",
-                  "docker run --name buildfarm-server -p 8980:8980 -v /var/lib/buildfarm-server/server.config:/var/lib/buildfarm-server/server.config ",
+                  "docker run --restart unless-stopped --name buildfarm-server -p 8980:8980 -v /var/lib/buildfarm-server/server.config:/var/lib/buildfarm-server/server.config ",
                   {
                     "Ref":"ServerRepo"
                   },
@@ -237,7 +237,7 @@
                     "Ref":"WorkerTag"
                   },
                   "\n",
-                  "docker run -d --name buildfarm-worker --privileged -v /var/lib/buildfarm-shard-worker/worker.config:/var/lib/buildfarm-shard-worker/worker.config -v /tmp/worker:/tmp/worker -p 8981:8981 ",
+                  "docker run -d --restart unless-stopped --name buildfarm-worker --privileged -v /var/lib/buildfarm-shard-worker/worker.config:/var/lib/buildfarm-shard-worker/worker.config -v /tmp/worker:/tmp/worker -p 8981:8981 ",
                   {
                     "Ref":"WorkerRepo"
                   },

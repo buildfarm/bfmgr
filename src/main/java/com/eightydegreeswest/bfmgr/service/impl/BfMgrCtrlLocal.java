@@ -20,6 +20,7 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.model.RestartPolicy;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -153,7 +154,9 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
 
     CreateContainerResponse response = dockerClient.createContainerCmd(redisRepo + ":" + redisTag)
       .withName(redisContainer)
-      .withHostConfig(HostConfig.newHostConfig().withPortBindings(portBindings))
+      .withHostConfig(HostConfig.newHostConfig()
+        .withRestartPolicy(RestartPolicy.unlessStoppedRestart())
+        .withPortBindings(portBindings))
       .exec();
     dockerClient.startContainerCmd(response.getId()).exec();
 
@@ -163,6 +166,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     response = dockerClient.createContainerCmd(createClusterRequest.getWorkerRepo() + ":" + createClusterRequest.getBuildfarmTag())
       .withName(workerContainer)
       .withHostConfig(HostConfig.newHostConfig()
+        .withRestartPolicy(RestartPolicy.unlessStoppedRestart())
         .withPortBindings(portBindings)
         .withPrivileged(true)
         .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-shard-worker"), Bind.parse("/tmp/worker:/tmp/worker"))
@@ -177,6 +181,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
     response = dockerClient.createContainerCmd(createClusterRequest.getServerRepo() + ":" + createClusterRequest.getBuildfarmTag())
       .withName(serverContainer)
       .withHostConfig(HostConfig.newHostConfig()
+        .withRestartPolicy(RestartPolicy.unlessStoppedRestart())
         .withPortBindings(portBindings)
         .withBinds(Bind.parse("/tmp/buildfarm:/var/lib/buildfarm-server"))
         .withNetworkMode("host"))
