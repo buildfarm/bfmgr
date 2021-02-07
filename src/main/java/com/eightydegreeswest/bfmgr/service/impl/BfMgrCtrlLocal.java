@@ -261,7 +261,7 @@ public class BfMgrCtrlLocal implements BfMgrCtrl {
   }
 
   private void pullEcrImage(String imageRepo, String tag) throws InterruptedException {
-    String region = imageRepo.split(".")[3];
+    String region = imageRepo.split("\\.")[3];
     logger.info("Pulling image {}:{} from ECR in region {}", imageRepo, tag, region);
     ecrClient = AmazonECRClientBuilder.standard().withRegion(region).build();
     GetAuthorizationTokenRequest getAuthTokenRequest = new GetAuthorizationTokenRequest();
