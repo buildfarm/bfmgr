@@ -27,6 +27,19 @@ rel=<RELEASE_NUMBER>
 wget https://github.com/80degreeswest/bfmgr/releases/download/$rel/bfmgr-$rel.jar
 java -jar bfmgr-$rel.jar
 ```
+#### Local Testing via AWS
+
+To run Buildfarm Manager on your local machine, but deploy Buildfarm in AWS, authenticate to AWS, the run bfmgr with the following tags:
+
+```
+java -jar bfmgr-$rel.jar --deploy aws --region us-east-1
+```
+
+If your AWS account requires specific tags (including mandatory asset tags) you can pass them as follows:
+
+```
+java -jar bfmgr-$rel.jar --deploy aws --region us-east-1 --tags "Tag1=Value1,Tag2=Value2" --asset "Asset"
+```
 
 Go to http://localhost and click Create
 
